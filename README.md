@@ -65,8 +65,31 @@ Git commit workflows and development best practices.
 ## Requirements
 
 - **Claude Code** with plugin support
-- **Notion MCP server** (for Notion-related plugins)
-- **GitHub CLI** (`gh`) (for dev-workflows)
+- **[Notion MCP server](https://www.notion.com/help/notion-mcp)** (for Notion-related plugins)
+- **[GitHub CLI](https://cli.github.com/)** (`gh`) (for dev-workflows)
+
+### Notion MCP Setup
+
+Add to your `~/.claude/.claude.json` under `mcpServers`:
+
+```json
+"notion": {
+  "type": "http",
+  "url": "https://mcp.notion.com/mcp"
+}
+```
+
+Then authenticate via Notion when prompted.
+
+### GitHub CLI Setup
+
+```bash
+# Install
+brew install gh
+
+# Authenticate
+gh auth login
+```
 
 ## Customization
 
