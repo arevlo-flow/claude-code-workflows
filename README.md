@@ -20,6 +20,20 @@ Or use commands directly:
 /plugin install arevlo-dev@claude-code-workflows
 ```
 
+## Updating
+
+1. Run `/plugin`
+2. Select **Manage Marketplaces**
+3. Select `claude-code-workflows` and choose **Update**
+4. Go back and select **Manage Plugins** to install any new plugins
+
+> **Note:** If you don't see a plugin after updating, go to **Manage Plugins** and enable or install it manually.
+
+Or use commands:
+```bash
+/plugin marketplace update claude-code-workflows
+```
+
 ## Plugins
 
 ### arevlo-design
