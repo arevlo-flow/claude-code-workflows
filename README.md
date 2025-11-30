@@ -4,19 +4,17 @@ A curated collection of Claude Code plugins with slash commands for design-to-co
 
 ## Installation
 
-### Add Marketplace
+1. Run `/plugin`
+2. Select **Add Marketplace**
+3. Enter marketplace source: `arevlo/claude-code-workflows`
+4. Select which plugins to install
 
-1. Run `/plugin` and select **Add Marketplace**
-2. Enter marketplace source: `arevlo/claude-code-workflows`
-
-Or use the command directly:
+Or use commands directly:
 ```bash
+# Add marketplace
 /plugin marketplace add arevlo/claude-code-workflows
-```
 
-### Install Plugins
-
-```bash
+# Install specific plugins
 /plugin install figma-make-toolkit@claude-code-workflows
 /plugin install notion-context-management@claude-code-workflows
 /plugin install dev-workflows@claude-code-workflows
