@@ -13,7 +13,6 @@ Slash commands for saving and loading Claude Code session context to multiple de
 ### Commands
 - `/save-context` - Save current session to multiple destinations
 - `/load-context` - Search and load prior context from multiple sources
-- `/context-reminder` - Reminder to save before ending session
 
 ## Storage Destinations
 
@@ -79,13 +78,6 @@ gh auth login
 - Searches your selected source
 - Shows matching results
 - Lets you select and view full content
-
-### Before Ending
-```
-/context-reminder
-```
-- Quick reminder to save your work
-- Prompts to run /save-context
 
 ## Customization
 
