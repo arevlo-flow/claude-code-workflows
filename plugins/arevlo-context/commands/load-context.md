@@ -20,6 +20,7 @@ Run these checks silently to determine which options to show:
 - **Notion:** Always available (requires Notion MCP)
 - **GitHub Issues:** Check if in a git repo with remote: `git remote get-url origin`
 - **Docs folder:** Check if `docs/context/` directory exists using Glob
+- **Plans folder:** Check if `plans/` directory exists using Glob
 
 ### 2. Show source picker
 ALWAYS ask the user where to search - present available options:
@@ -31,6 +32,7 @@ Where would you like to search for context?
 2. Notion (_clawd database)
 3. GitHub Issues (in current repo)    [only if git remote exists]
 4. Docs folder (./docs/context/)      [only if docs/context exists]
+5. Plans folder (./plans/)            [only if plans/ exists]
 
 Select source:
 ```
@@ -73,6 +75,12 @@ Select source:
 - If query provided, use Grep to search file content for matches
 - If no query, show all files
 - Display filenames with dates (extracted from filename)
+
+**If Plans folder:**
+- List files using Glob: `plans/*.md`
+- If query provided, use Grep to search file content for matches
+- If no query, show all files
+- Display filenames (plans are typically named by feature/topic)
 
 ### 4. Display results
 Show results with:

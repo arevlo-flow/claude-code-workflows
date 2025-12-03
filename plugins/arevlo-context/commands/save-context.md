@@ -23,6 +23,7 @@ Run these checks silently to determine which options to show:
 - **Notion:** Always available (requires Notion MCP)
 - **GitHub Issue:** Check if in a git repo with remote: `git remote get-url origin`
 - **Docs folder:** Check if `docs/` directory exists using Glob
+- **Plans folder:** Check if `plans/` directory exists using Glob
 
 ### 3. Show destination picker
 ALWAYS ask the user where to save - present available options:
@@ -34,6 +35,7 @@ Where would you like to save this context?
 2. Notion (_clawd database)
 3. GitHub Issue (in current repo)     [only if git remote exists]
 4. Docs folder (./docs/context/)      [only if docs/ exists]
+5. Plans folder (./plans/)            [only if plans/ exists]
 
 Select destination:
 ```
@@ -93,6 +95,14 @@ Create comprehensive session summary including:
 **If Docs folder:**
 - Create `docs/context/` subdirectory if it doesn't exist
 - Save as markdown file: `{YYYY-MM-DD}-{slug-title}.md`
+- Slugify title: lowercase, replace spaces with hyphens, remove special characters
+- Use Write tool
+- Report relative path to user
+
+**If Plans folder:**
+- First check if a plan with similar name already exists in `plans/`
+- If exists, ask user: "A plan '{filename}' already exists. Overwrite or create new?"
+- Save as markdown file: `{slug-title}.md` (no date prefix for plans)
 - Slugify title: lowercase, replace spaces with hyphens, remove special characters
 - Use Write tool
 - Report relative path to user
