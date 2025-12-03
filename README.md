@@ -46,13 +46,12 @@ Slash commands for Figma Make design-to-code workflows.
 
 ### arevlo-context
 
-Slash commands for saving/loading Claude Code session context to Notion.
+Slash commands for saving/loading Claude Code session context.
 
-- `/save-context` - Save session to Notion
-- `/load-context` - Load prior context
-- `/context-reminder` - Reminder to save before ending
+- `/save-context` - Save session to local, Notion, GitHub, or docs/plans folder
+- `/load-context` - Search and load prior context from multiple sources
 
-> **Requires:** [Notion MCP server](#notion-mcp-setup)
+> **Requires:** [Notion MCP server](#notion-mcp-setup) for Notion destinations
 
 ### arevlo-dev
 
@@ -61,6 +60,8 @@ Git commit workflows and development best practices.
 - `/commit` - Full commit workflow with branch management
 - `/pr-describe` - Generate/update PR descriptions
 - `/pr-review` - Request AI code review
+- `/release <version>` - Create semver release with tag and GitHub release
+- `/kill-port` - Check and kill processes using specific ports
 
 > **Requires:** [GitHub CLI](#github-cli-setup)
 
@@ -104,16 +105,17 @@ Run after Figma Make pushes changes (or any code changes):
 
 | Command | Purpose |
 |---------|---------|
-| `/save-context` | Save session context to Notion |
-| `/load-context <query>` | Search and load prior contexts |
-| `/context-reminder` | Reminder to save before ending |
+| `/save-context` | Save session context to local, Notion, GitHub, or docs/plans |
+| `/load-context <query>` | Search and load prior contexts from multiple sources |
 
-### PR Workflows
+### Dev Workflows
 
 | Command | Purpose |
 |---------|---------|
 | `/pr-describe` | Generate/update PR description |
 | `/pr-review` | Request @claude or @codex review |
+| `/release <version>` | Create semver release (patch, minor, major, or explicit) |
+| `/kill-port` | Check and kill processes on specific ports |
 
 ## Requirements
 
