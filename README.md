@@ -63,20 +63,23 @@ Git commit workflows and development best practices.
 - `/pr-review` - Request AI code review
 - `/release <version>` - Create semver release with tag and GitHub release
 - `/kill-port` - Check and kill processes using specific ports
+- `/resolve` - Resolve merge conflicts interactively
 
 > **Requires:** [GitHub CLI](#github-cli-setup)
 
 ### arevlo-swarm
 
-Multi-agent orchestration for parallel code analysis.
+Multi-agent orchestration for parallel code analysis. Works with any project type.
 
-- `/swarm [preset]` - Start multi-agent swarm (presets: `figma`, `review`, `full`)
+- `/swarm [preset]` - Start swarm (auto-detects project or use preset)
 - `/spawn <agent>` - Spawn a single background agent
 - `/hive` - Check status and findings from all agents
 - `/sync` - Consolidate findings into prioritized action items
 - `/stop [agent]` - Stop one or all running agents
 
-**Available agents:** reviewer, simplifier, type-analyzer, silent-hunter, comment-analyzer, test-analyzer
+**Presets:** `review`, `quality`, `security`, `cleanup`, `full`, `figma`
+
+**Agents:** reviewer, simplifier, type-analyzer, silent-hunter, comment-analyzer, test-analyzer
 
 > **Requires:** `--dangerously-skip-permissions` enabled
 
@@ -108,11 +111,10 @@ Claude Code               Notion                  Figma Make
 ### Multi-Agent Workflow (Swarm)
 
 ```
-/swarm figma              Background Agents         Your Session
+/swarm                    Background Agents         Your Session
     |                           |                       |
-    |-- spawn reviewer -------->|                       |
-    |-- spawn type-analyzer --->|                       |
-    |-- spawn silent-hunter --->|                       |
+    |-- auto-detect project --->|                       |
+    |-- spawn agents ---------->|                       |
     |                           |                       |
     |                           |-- analyze code ------>|
     |                           |-- write reports ----->|
@@ -121,7 +123,7 @@ Claude Code               Notion                  Figma Make
     |<-- /sync (consolidate) ---|                       |
 ```
 
-1. **Start swarm** - `/swarm figma` for Figma plugin development
+1. **Start swarm** - `/swarm` auto-detects, or `/swarm review` for a preset
 2. **Work normally** - Agents analyze in background
 3. **Check progress** - `/hive` to see findings
 4. **Consolidate** - `/sync` for prioritized action list
@@ -133,7 +135,7 @@ Claude Code               Notion                  Figma Make
 /commit
 ```
 
-Run after Figma Make pushes changes (or any code changes):
+Run after making code changes:
 - Stage and commit changes
 - Update PR description if PR exists
 - Push with confirmation

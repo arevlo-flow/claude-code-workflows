@@ -1,5 +1,5 @@
 {
   "name": "arevlo-swarm",
   "description": "Multi-agent orchestration for parallel workflows - spawn background agents for code review, Figma analysis, and automated testing",
-  "version": "1.0.0"
+  "version": "1.2.0"
 }

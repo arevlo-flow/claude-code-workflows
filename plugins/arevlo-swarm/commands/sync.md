@@ -18,9 +18,18 @@ Consolidate all agent findings into a prioritized list of action items.
 ## Steps:
 
 1. **Gather all reports:**
+
+   **bash/zsh (macOS, Linux, Git Bash, WSL):**
    ```bash
-   # Collect all report files
+   # Collect all report files from last 60 minutes
    find .claude/swarm/reports -name "*.md" -mmin -60
+   ```
+
+   **PowerShell (Windows):**
+   ```powershell
+   # Collect all report files from last 60 minutes
+   Get-ChildItem .claude/swarm/reports -Filter "*.md" |
+     Where-Object { $_.LastWriteTime -gt (Get-Date).AddMinutes(-60) }
    ```
 
 2. **Parse and deduplicate:**
@@ -79,7 +88,7 @@ Consolidate all agent findings into a prioritized list of action items.
 ## Output
 
 ```
-🔄 SYNC COMPLETE
+SYNC COMPLETE
 ═══════════════════════════════════════════════════
 
 Processed: 12 reports from 3 agents

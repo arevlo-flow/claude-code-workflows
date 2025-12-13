@@ -23,6 +23,8 @@ View the status of all running swarm agents and their latest findings.
    - If not found, inform user no swarm is active
 
 2. **Gather agent statuses:**
+
+   **bash/zsh (macOS, Linux, Git Bash, WSL):**
    ```bash
    for pid_file in .claude/swarm/pids/*.pid; do
      agent=$(basename "$pid_file" .pid)
@@ -35,9 +37,23 @@ View the status of all running swarm agents and their latest findings.
    done
    ```
 
+   **PowerShell (Windows):**
+   ```powershell
+   Get-ChildItem .claude/swarm/pids/*.pid | ForEach-Object {
+     $agent = $_.BaseName
+     $pid = Get-Content $_.FullName
+     try {
+       $proc = Get-Process -Id $pid -ErrorAction Stop
+       Write-Output "$agent: RUNNING (PID $pid)"
+     } catch {
+       Write-Output "$agent: STOPPED"
+     }
+   }
+   ```
+
 3. **Display status table:**
    ```
-   🐝 SWARM STATUS
+   SWARM STATUS
    ═══════════════════════════════════════
    Agent           Status    Last Report
    ───────────────────────────────────────
@@ -50,9 +66,9 @@ View the status of all running swarm agents and their latest findings.
 4. **Show recent findings (if any):**
    - Read latest report from each agent
    - Summarize key findings:
-     - Critical issues (🔴)
-     - Warnings (🟡)
-     - Suggestions (🟢)
+     - Critical issues [CRITICAL]
+     - Warnings [WARNING]
+     - Suggestions [OK]
 
 5. **If `--issues` flag:**
    - Filter to only show problems found
@@ -65,28 +81,28 @@ View the status of all running swarm agents and their latest findings.
 ## Output Example
 
 ```
-🐝 SWARM STATUS
+SWARM STATUS
 Started: 2024-01-15 10:30:00 (45 min ago)
 
 AGENTS
 ┌─────────────────┬─────────┬─────────────┬──────────┐
 │ Agent           │ Status  │ Last Report │ Findings │
 ├─────────────────┼─────────┼─────────────┼──────────┤
-│ reviewer        │ 🟢 RUN  │ 2 min ago   │ 3 issues │
-│ type-analyzer   │ 🟢 RUN  │ 5 min ago   │ 1 issue  │
-│ silent-hunter   │ 🔴 STOP │ 15 min ago  │ 2 issues │
+│ reviewer        │ [RUN]   │ 2 min ago   │ 3 issues │
+│ type-analyzer   │ [RUN]   │ 5 min ago   │ 1 issue  │
+│ silent-hunter   │ [STOP]  │ 15 min ago  │ 2 issues │
 └─────────────────┴─────────┴─────────────┴──────────┘
 
 RECENT FINDINGS
 ───────────────────────────────────────────────────────
-🔴 [silent-hunter] Unhandled promise in figma.ts:45
-   → async function missing try/catch
-   
-🟡 [reviewer] Complex function in handler.ts:120
-   → Cyclomatic complexity: 15 (threshold: 10)
-   
-🟢 [type-analyzer] Type inference suggestion
-   → Consider explicit return type in utils.ts:30
+[CRITICAL] [silent-hunter] Unhandled promise in figma.ts:45
+   -> async function missing try/catch
+
+[WARNING] [reviewer] Complex function in handler.ts:120
+   -> Cyclomatic complexity: 15 (threshold: 10)
+
+[OK] [type-analyzer] Type inference suggestion
+   -> Consider explicit return type in utils.ts:30
 ───────────────────────────────────────────────────────
 
 Run /sync to consolidate and prioritize issues.

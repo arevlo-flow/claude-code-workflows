@@ -23,8 +23,16 @@ Spawn a single specialized agent to run analysis in the background.
    - If not, show available agents and exit
 
 2. **Initialize if needed:**
+
+   **bash/zsh (macOS, Linux, Git Bash, WSL):**
    ```bash
    mkdir -p .claude/swarm/{reports,issues,logs,pids}
+   ```
+
+   **PowerShell (Windows):**
+   ```powershell
+   $dirs = @('reports','issues','logs','pids')
+   $dirs | ForEach-Object { New-Item -ItemType Directory -Force -Path ".claude/swarm/$_" }
    ```
 
 3. **Check for existing agent:**
@@ -36,6 +44,8 @@ Spawn a single specialized agent to run analysis in the background.
    - These contain specialized prompts for each agent type
 
 5. **Spawn agent:**
+
+   **bash/zsh (macOS, Linux, Git Bash, WSL):**
    ```bash
    # Watch mode (default)
    nohup claude --agent <agent> \
@@ -45,12 +55,37 @@ Spawn a single specialized agent to run analysis in the background.
      --dangerously-skip-permissions \
      > .claude/swarm/logs/<agent>.log 2>&1 &
    echo $! > .claude/swarm/pids/<agent>.pid
-   
+
    # One-shot mode
    claude --agent <agent> \
      --system "$(cat agents/<agent>.md)" \
      --path "src/" \
      --output ".claude/swarm/reports/<agent>-$(date +%s).md" \
+     --dangerously-skip-permissions
+   ```
+
+   **PowerShell (Windows):**
+   ```powershell
+   # Watch mode (default)
+   $timestamp = [int](Get-Date -UFormat %s)
+   $agentInstructions = Get-Content "agents/<agent>.md" -Raw
+   $process = Start-Process claude -ArgumentList @(
+     '--agent', '<agent>',
+     '--system', $agentInstructions,
+     '--watch', '<pattern>',
+     '--output', ".claude/swarm/reports/<agent>-$timestamp.md",
+     '--dangerously-skip-permissions'
+   ) -RedirectStandardOutput ".claude/swarm/logs/<agent>.log" `
+     -RedirectStandardError ".claude/swarm/logs/<agent>-err.log" `
+     -PassThru -NoNewWindow
+   $process.Id | Out-File .claude/swarm/pids/<agent>.pid
+
+   # One-shot mode
+   $timestamp = [int](Get-Date -UFormat %s)
+   claude --agent <agent> `
+     --system (Get-Content "agents/<agent>.md" -Raw) `
+     --path "src/" `
+     --output ".claude/swarm/reports/<agent>-$timestamp.md" `
      --dangerously-skip-permissions
    ```
 

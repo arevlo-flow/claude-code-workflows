@@ -12,10 +12,13 @@ Start a multi-agent swarm for parallel task execution. Agents run in separate te
 ```
 
 **Presets:**
-- `figma` - Figma plugin development (reviewer + type analyzer + silent failure hunter)
-- `review` - Code review suite (reviewer + simplifier + comment analyzer)
+- `review` - General code review (reviewer + simplifier + comment-analyzer)
+- `quality` - Code quality focus (reviewer + type-analyzer + test-analyzer)
+- `security` - Error handling & safety (silent-hunter + reviewer)
+- `cleanup` - Tech debt reduction (simplifier + comment-analyzer)
 - `full` - All available agents
-- (none) - Interactive selection
+- `figma` - Figma plugin development (reviewer + type-analyzer + silent-hunter)
+- (none) - Auto-detect and recommend based on project
 
 ## Steps:
 
@@ -24,25 +27,66 @@ Start a multi-agent swarm for parallel task execution. Agents run in separate te
    - If exists, ask if user wants to stop existing swarm or add to it
 
 2. **Initialize swarm directory:**
+
+   **bash/zsh (macOS, Linux, Git Bash, WSL):**
    ```bash
-   mkdir -p .claude/swarm/{reports,issues,context}
+   mkdir -p .claude/swarm/{reports,issues,context,logs,pids}
    echo "$(date -Iseconds)" > .claude/swarm/started_at
    ```
 
-3. **Select agents based on preset or prompt user:**
-   
+   **PowerShell (Windows):**
+   ```powershell
+   $dirs = @('reports','issues','context','logs','pids')
+   $dirs | ForEach-Object { New-Item -ItemType Directory -Force -Path ".claude/swarm/$_" }
+   Get-Date -Format o | Out-File .claude/swarm/started_at
+   ```
+
+3. **Select agents based on preset or auto-detect:**
+
+   **If preset provided:** Use the preset configuration.
+
+   **If no preset (auto-detect):**
+
+   a. Detect project stack by checking for config files:
+      - `tsconfig.json` → TypeScript → include `type-analyzer`
+      - `package.json` with test script → include `test-analyzer`
+      - `pytest.ini`, `setup.py`, `pyproject.toml` → Python project
+      - `go.mod` → Go project
+      - `Cargo.toml` → Rust project
+
+   b. Check for indicators of tech debt:
+      - Search for TODO/FIXME comments → many found → include `comment-analyzer`
+      - Check for test directory → not found → include `test-analyzer`
+      - Check git history → many commits → brownfield (include `simplifier`)
+
+   c. Present recommendation to user:
+      ```
+      Detected: TypeScript project (React), no tests found
+
+      Recommended agents:
+        - reviewer (code quality)
+        - type-analyzer (TypeScript)
+        - test-analyzer (no tests detected)
+
+      Proceed with these agents? [Y/n]
+      ```
+
+   d. If user declines, show available agents for manual selection.
+
    **Available agents:**
    | Agent | Description | Best for |
    |-------|-------------|----------|
    | `reviewer` | Code quality and patterns | General review |
-   | `simplifier` | Reduce complexity | Refactoring |
+   | `simplifier` | Reduce complexity | Refactoring, brownfield |
    | `type-analyzer` | TypeScript/type issues | TS projects |
-   | `silent-hunter` | Unhandled async errors | Plugins, async code |
-   | `comment-analyzer` | TODO/FIXME tracking | Documentation |
+   | `silent-hunter` | Unhandled async errors | Async code, plugins |
+   | `comment-analyzer` | TODO/FIXME tracking | Documentation, cleanup |
    | `test-analyzer` | Test coverage gaps | Testing |
 
 4. **Spawn selected agents:**
    - For each agent, run in background:
+
+   **bash/zsh (macOS, Linux, Git Bash, WSL):**
    ```bash
    # Example for reviewer agent
    nohup claude --agent reviewer \
@@ -51,6 +95,21 @@ Start a multi-agent swarm for parallel task execution. Agents run in separate te
      --dangerously-skip-permissions \
      > .claude/swarm/logs/reviewer.log 2>&1 &
    echo $! > .claude/swarm/pids/reviewer.pid
+   ```
+
+   **PowerShell (Windows):**
+   ```powershell
+   # Example for reviewer agent
+   $timestamp = [int](Get-Date -UFormat %s)
+   $process = Start-Process claude -ArgumentList @(
+     '--agent', 'reviewer',
+     '--watch', 'src/**/*.ts',
+     '--output', ".claude/swarm/reports/reviewer-$timestamp.md",
+     '--dangerously-skip-permissions'
+   ) -RedirectStandardOutput ".claude/swarm/logs/reviewer.log" `
+     -RedirectStandardError ".claude/swarm/logs/reviewer-err.log" `
+     -PassThru -NoNewWindow
+   $process.Id | Out-File .claude/swarm/pids/reviewer.pid
    ```
 
 5. **Create swarm manifest:**
@@ -67,21 +126,63 @@ Start a multi-agent swarm for parallel task execution. Agents run in separate te
 
 ## Presets Configuration
 
+### review preset
+General code review for any project.
+```json
+{
+  "agents": ["reviewer", "simplifier", "comment-analyzer"],
+  "watch": "**/*.{ts,tsx,js,jsx,py,go,rs}",
+  "focus": "Code quality, complexity, documentation"
+}
+```
+
+### quality preset
+Code quality and correctness focus.
+```json
+{
+  "agents": ["reviewer", "type-analyzer", "test-analyzer"],
+  "watch": "**/*.{ts,tsx,js,jsx}",
+  "focus": "Type safety, test coverage, patterns"
+}
+```
+
+### security preset
+Error handling and safety focus.
+```json
+{
+  "agents": ["silent-hunter", "reviewer"],
+  "watch": "**/*.{ts,tsx,js,jsx}",
+  "focus": "Unhandled errors, async issues, failure modes"
+}
+```
+
+### cleanup preset
+Tech debt and documentation focus.
+```json
+{
+  "agents": ["simplifier", "comment-analyzer"],
+  "watch": "**/*.{ts,tsx,js,jsx,py,go,rs}",
+  "focus": "Complexity reduction, TODO tracking, documentation"
+}
+```
+
+### full preset
+All available agents for comprehensive analysis.
+```json
+{
+  "agents": ["reviewer", "simplifier", "type-analyzer", "silent-hunter", "comment-analyzer", "test-analyzer"],
+  "watch": "**/*.{ts,tsx,js,jsx}",
+  "focus": "Comprehensive code analysis"
+}
+```
+
 ### figma preset
+Figma plugin development (example of domain-specific preset).
 ```json
 {
   "agents": ["reviewer", "type-analyzer", "silent-hunter"],
   "watch": "src/**/*.{ts,tsx}",
   "focus": "Figma plugin patterns, async handling, type safety"
-}
-```
-
-### review preset
-```json
-{
-  "agents": ["reviewer", "simplifier", "comment-analyzer"],
-  "watch": "src/**/*.{ts,tsx,js,jsx}",
-  "focus": "Code quality, complexity, documentation"
 }
 ```
 

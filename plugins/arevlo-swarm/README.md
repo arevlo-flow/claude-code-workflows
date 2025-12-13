@@ -35,7 +35,7 @@ The swarm plugin enables a "hive mind" approach to code analysis by running mult
 
 | Command | Description |
 |---------|-------------|
-| `/swarm [preset]` | Start multi-agent swarm with preset or interactive selection |
+| `/swarm [preset]` | Start multi-agent swarm with preset or auto-detect |
 | `/spawn <agent>` | Spawn a single background agent |
 | `/hive` | Check status and findings from all agents |
 | `/sync` | Consolidate findings into prioritized action items |
@@ -43,16 +43,17 @@ The swarm plugin enables a "hive mind" approach to code analysis by running mult
 
 ## Quick Start
 
-### 1. Start a Figma Plugin Swarm
+### 1. Start a Swarm
 
 ```bash
-/swarm figma
+# Auto-detect project type and recommend agents
+/swarm
+
+# Or use a preset
+/swarm review
 ```
 
-This spawns three agents optimized for Figma plugin development:
-- **reviewer**: Code quality and patterns
-- **type-analyzer**: TypeScript and Figma API types
-- **silent-hunter**: Unhandled promises and silent failures
+When you run `/swarm` without arguments, it auto-detects your project type (TypeScript, Python, Go, etc.) and recommends appropriate agents.
 
 ### 2. Check Status
 
@@ -78,24 +79,51 @@ Consolidate all findings into a prioritized action list.
 
 ## Presets
 
-### `figma`
-For Figma plugin development. Focuses on async handling, type safety, and plugin-specific patterns.
+| Preset | Agents | Use Case |
+|--------|--------|----------|
+| `review` | reviewer, simplifier, comment-analyzer | General code review |
+| `quality` | reviewer, type-analyzer, test-analyzer | Code quality & correctness |
+| `security` | silent-hunter, reviewer | Error handling & safety |
+| `cleanup` | simplifier, comment-analyzer | Tech debt reduction |
+| `full` | All agents | Comprehensive analysis |
+| `figma` | reviewer, type-analyzer, silent-hunter | Figma plugin development |
 
-### `review`
-General code review. Focuses on code quality, complexity, and documentation.
+### Choosing a Preset
 
-### `full`
-All available agents for comprehensive analysis.
+- **Greenfield projects:** Use `quality` to establish good patterns early
+- **Brownfield/legacy:** Use `cleanup` or `review` to find tech debt
+- **Before release:** Use `security` to catch error handling issues
+- **Comprehensive audit:** Use `full` for thorough analysis
+
+## Auto-Detection
+
+When you run `/swarm` without a preset, it analyzes your project:
+
+1. **Detects your stack** from config files (`tsconfig.json`, `package.json`, `go.mod`, etc.)
+2. **Checks for tech debt indicators** (TODOs, missing tests, complex functions)
+3. **Recommends agents** based on what it finds
+
+Example output:
+```
+Detected: TypeScript project (React), no tests found
+
+Recommended agents:
+  - reviewer (code quality)
+  - type-analyzer (TypeScript)
+  - test-analyzer (no tests detected)
+
+Proceed with these agents? [Y/n]
+```
 
 ## Available Agents
 
 | Agent | Focus | Best For |
 |-------|-------|----------|
-| `reviewer` | Code quality, patterns, best practices | General review |
-| `simplifier` | Complexity reduction, DRY | Refactoring |
+| `reviewer` | Code quality, patterns, best practices | Any project |
+| `simplifier` | Complexity reduction, DRY | Refactoring, brownfield |
 | `type-analyzer` | TypeScript type safety | TS projects |
-| `silent-hunter` | Unhandled async, silent failures | Plugins, async |
-| `comment-analyzer` | TODOs, FIXMEs, documentation | Cleanup |
+| `silent-hunter` | Unhandled async, silent failures | Async code, plugins |
+| `comment-analyzer` | TODOs, FIXMEs, documentation | Cleanup, documentation |
 | `test-analyzer` | Test coverage and quality | Testing |
 
 ## How It Works
@@ -125,16 +153,59 @@ The swarm approach helps manage context limits:
 
 - Claude Code with plugin support
 - `--dangerously-skip-permissions` enabled for background agents
-- Unix-like environment (macOS, Linux, WSL)
+- **Supported platforms:** macOS, Linux, Windows
 
-## Workflow Example
+### Shell Requirements
+
+| Platform | Supported Shells |
+|----------|------------------|
+| macOS/Linux | bash, zsh (default) |
+| Windows | PowerShell, Git Bash, WSL |
+
+> **Note:** Windows cmd.exe is not supported. Use PowerShell (default on Windows 10+) or a Unix shell (Git Bash, WSL).
+
+## Examples
+
+### Example: TypeScript/React Project
+
+```bash
+cd my-react-app
+/swarm quality
+# Spawns: reviewer, type-analyzer, test-analyzer
+```
+
+### Example: Python Backend
+
+```bash
+cd my-api
+/swarm review
+# Spawns: reviewer, simplifier, comment-analyzer
+```
+
+### Example: Figma Plugin
+
+```bash
+cd my-figma-plugin
+/swarm figma
+# Spawns: reviewer, type-analyzer, silent-hunter
+```
+
+### Example: Legacy Codebase Cleanup
+
+```bash
+cd legacy-app
+/swarm cleanup
+# Spawns: simplifier, comment-analyzer
+```
+
+## Workflow
 
 ```bash
 # Start your development session
-cd my-figma-plugin
+cd my-project
 
-# Spawn the swarm
-/swarm figma
+# Spawn the swarm (auto-detect or use preset)
+/swarm
 
 # Work on your code...
 # (agents analyze in background)
@@ -166,6 +237,18 @@ Agent behavior can be customized by editing files in `agents/`:
 - `silent-hunter.md` - Failure patterns to detect
 - `type-analyzer.md` - Type checking rules
 - etc.
+
+### Creating Custom Presets
+
+To create a domain-specific preset (like `figma`), add a new section to `swarm.md`:
+
+```json
+{
+  "agents": ["reviewer", "your-agent", "another-agent"],
+  "watch": "src/**/*.{ts,tsx}",
+  "focus": "Your specific focus area"
+}
+```
 
 ## License
 

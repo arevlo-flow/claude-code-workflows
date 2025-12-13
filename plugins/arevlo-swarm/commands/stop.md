@@ -23,21 +23,41 @@ Stop one or all running swarm agents.
    - If no swarm active, inform user
 
 2. **If specific agent:**
+
+   **bash/zsh (macOS, Linux, Git Bash, WSL):**
    ```bash
    pid=$(cat .claude/swarm/pids/<agent>.pid)
    kill $pid
    rm .claude/swarm/pids/<agent>.pid
    ```
 
+   **PowerShell (Windows):**
+   ```powershell
+   $pid = Get-Content .claude/swarm/pids/<agent>.pid
+   Stop-Process -Id $pid -Force
+   Remove-Item .claude/swarm/pids/<agent>.pid
+   ```
+
 3. **If `--all` or no args:**
    - Ask for confirmation
    - Stop all agents:
+
+   **bash/zsh (macOS, Linux, Git Bash, WSL):**
    ```bash
    for pid_file in .claude/swarm/pids/*.pid; do
      pid=$(cat "$pid_file")
      kill $pid 2>/dev/null
      rm "$pid_file"
    done
+   ```
+
+   **PowerShell (Windows):**
+   ```powershell
+   Get-ChildItem .claude/swarm/pids/*.pid | ForEach-Object {
+     $pid = Get-Content $_.FullName
+     Stop-Process -Id $pid -Force -ErrorAction SilentlyContinue
+     Remove-Item $_.FullName
+   }
    ```
 
 4. **Archive session:**
@@ -57,13 +77,13 @@ Stop one or all running swarm agents.
 ## Output
 
 ```
-🛑 STOPPING SWARM
+STOPPING SWARM
 ═══════════════════════════════════════════════════
 
 Stopping agents...
-  ✓ reviewer (PID 12345) - stopped
-  ✓ type-analyzer (PID 12346) - stopped
-  ✓ silent-hunter (PID 12347) - stopped
+  [OK] reviewer (PID 12345) - stopped
+  [OK] type-analyzer (PID 12346) - stopped
+  [OK] silent-hunter (PID 12347) - stopped
 
 SESSION SUMMARY
 ───────────────────────────────────────────────────
