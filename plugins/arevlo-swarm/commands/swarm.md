@@ -28,7 +28,103 @@ Start a multi-agent swarm for parallel task execution. Agents run in separate te
 
 1. **Check for existing swarm:**
    - Look for `.claude/swarm/` directory
-   - If exists, ask if user wants to stop existing swarm or add to it
+   - If directory does not exist: Proceed to step 2
+   - If directory exists: Check if any agents are ACTUALLY running
+
+   **a. Check PID liveness:**
+
+   **bash/zsh (macOS, Linux, Git Bash, WSL):**
+   ```bash
+   running_count=0
+   running_agents=""
+   for pid_file in .claude/swarm/pids/*.pid 2>/dev/null; do
+     if [ -f "$pid_file" ]; then
+       agent=$(basename "$pid_file" .pid)
+       pid=$(cat "$pid_file")
+       if ps -p $pid > /dev/null 2>&1; then
+         ((running_count++))
+         running_agents="$running_agents $agent"
+       fi
+     fi
+   done
+   ```
+
+   **PowerShell (Windows):**
+   ```powershell
+   $runningCount = 0
+   $runningAgents = @()
+   Get-ChildItem .claude/swarm/pids/*.pid -ErrorAction SilentlyContinue | ForEach-Object {
+       $agent = $_.BaseName
+       $pidValue = Get-Content $_.FullName
+       if (Get-Process -Id $pidValue -ErrorAction SilentlyContinue) {
+           $runningCount++
+           $runningAgents += $agent
+       }
+   }
+   ```
+
+   **b. If ALL PIDs are dead (stale session):**
+
+   Show message and auto-cleanup:
+   ```
+   Previous swarm session found. Checking status...
+
+   All agents have completed. Archiving session...
+   ```
+
+   **Archive and cleanup (bash/zsh):**
+   ```bash
+   archive_dir=".claude/swarm/archive/$(date +%Y%m%d-%H%M%S)"
+   mkdir -p "$archive_dir"
+   mv .claude/swarm/reports/*.md "$archive_dir/" 2>/dev/null
+   rm -f .claude/swarm/pids/*.pid
+   rm -f .claude/swarm/manifest.json
+   rm -f .claude/swarm/started_at
+   # Keep only last 5 archives
+   ls -dt .claude/swarm/archive/*/ 2>/dev/null | tail -n +6 | xargs rm -rf 2>/dev/null
+   ```
+
+   **Archive and cleanup (PowerShell):**
+   ```powershell
+   $archiveDir = ".claude/swarm/archive/$(Get-Date -Format 'yyyyMMdd-HHmmss')"
+   New-Item -ItemType Directory -Force -Path $archiveDir
+   Move-Item .claude/swarm/reports/*.md $archiveDir -ErrorAction SilentlyContinue
+   Remove-Item .claude/swarm/pids/*.pid -ErrorAction SilentlyContinue
+   Remove-Item .claude/swarm/manifest.json -ErrorAction SilentlyContinue
+   Remove-Item .claude/swarm/started_at -ErrorAction SilentlyContinue
+   # Keep only last 5 archives
+   Get-ChildItem .claude/swarm/archive -Directory | Sort-Object CreationTime -Descending | Select-Object -Skip 5 | Remove-Item -Recurse -Force
+   ```
+
+   Show:
+   ```
+   ✓ Archived reports to .claude/swarm/archive/<timestamp>/
+   ✓ Cleaned up stale state files
+
+   Starting fresh swarm...
+   ```
+
+   Then proceed to step 2.
+
+   **c. If SOME PIDs are still running:**
+
+   Show running agents table and ask user:
+   ```
+   A swarm is already running with these agents:
+
+   | Agent         | Focus                     | Status  |
+   |---------------|---------------------------|---------|
+   | reviewer      | Code quality and patterns | Running |
+   | type-analyzer | TypeScript type issues    | Running |
+   | silent-hunter | Unhandled async errors    | Running |
+
+   What would you like to do?
+   1. Keep existing swarm - Use /hive to check agent findings
+   2. Stop and restart - Stop current swarm and start fresh with different preset
+   3. Add agents - Add more agents to the existing swarm
+   ```
+
+   Use AskUserQuestion to get user choice.
 
 2. **Initialize swarm directory:**
 
