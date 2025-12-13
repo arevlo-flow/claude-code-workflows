@@ -108,8 +108,55 @@ RECENT FINDINGS
 Run /sync to consolidate and prioritize issues.
 ```
 
+## Post-Completion Flow
+
+When all agents have completed (no agents RUNNING), present interactive options:
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  SWARM COMPLETE                                         │
+│                                                         │
+│  Found X critical issues that should be addressed:      │
+│  ├─ file.ts:XX - Issue description                      │
+│  ├─ file.ts:XX - Issue description                      │
+│  └─ ... more                                            │
+│                                                         │
+│  How would you like to proceed?                         │
+│                                                         │
+│  [1] Fix critical issues (recommended)                  │
+│  [2] Show full report (/sync)                           │
+│  [3] Work on something else                             │
+│  [4] Keep watching for changes (watch mode)             │
+└─────────────────────────────────────────────────────────┘
+```
+
+**Use AskUserQuestion tool with these options:**
+
+```json
+{
+  "questions": [{
+    "question": "All agents completed. How would you like to proceed?",
+    "header": "Next step",
+    "options": [
+      {"label": "Fix critical issues (Recommended)", "description": "Start interactive fix mode for P0/HIGH issues"},
+      {"label": "Show full report", "description": "Run /sync to consolidate all findings"},
+      {"label": "Work on something else", "description": "Continue with other work, findings saved"},
+      {"label": "Enable watch mode", "description": "Keep agents running to catch new issues"}
+    ],
+    "multiSelect": false
+  }]
+}
+```
+
+**Based on response:**
+- **Fix critical issues** → Run `/fix` command
+- **Show full report** → Run `/sync` command
+- **Work on something else** → End hive, remind about `/fix` and `/sync`
+- **Enable watch mode** → Restart agents with `--watch` flag
+
 ## Notes
 
 - Shows real-time status of background agents
 - Reports are accumulated over time
 - Use `/sync` to consolidate findings into actionable tasks
+- When all agents complete, prompts user for next steps

@@ -39,6 +39,7 @@ The swarm plugin enables a "hive mind" approach to code analysis by running mult
 | `/spawn <agent>` | Spawn a single background agent |
 | `/hive` | Check status and findings from all agents |
 | `/sync` | Consolidate findings into prioritized action items |
+| `/fix` | **NEW** Interactive mode to fix issues one by one |
 | `/stop [agent]` | Stop one or all running agents |
 
 ## Quick Start
@@ -66,12 +67,28 @@ See which agents are running and their latest findings.
 ### 3. Review Findings
 
 ```bash
-/sync
+/hive
 ```
 
-Consolidate all findings into a prioritized action list.
+When all agents complete, you'll be prompted with next steps:
+- Fix critical issues (recommended)
+- Show full report (/sync)
+- Work on something else
+- Enable watch mode
 
-### 4. Stop When Done
+### 4. Fix Issues
+
+```bash
+/fix
+```
+
+Interactive mode walks through issues one by one:
+- Shows the issue and current code
+- Offers to fix, skip, or view more context
+- Claude implements fixes and shows diffs
+- Tracks progress through issue queue
+
+### 5. Stop When Done
 
 ```bash
 /stop
@@ -200,28 +217,73 @@ cd legacy-app
 
 ## Workflow
 
+### One-Time Analysis (default)
+
 ```bash
-# Start your development session
 cd my-project
-
-# Spawn the swarm (auto-detect or use preset)
-/swarm
-
-# Work on your code...
-# (agents analyze in background)
-
-# Check what they found
-/hive
-
-# Get prioritized action list
-/sync
-
-# Fix critical issues
-# (agents re-analyze automatically)
-
-# When done
-/stop
+/swarm                    # Start agents
+# (agents analyze codebase)
+/hive                     # Review findings, pick next step
+/fix                      # Fix issues interactively
+/stop                     # Stop when done
 ```
+
+### Continuous Development (watch mode)
+
+```bash
+cd my-project
+/swarm figma --watch      # Start in watch mode
+# (agents analyze, then watch for changes)
+
+# You make changes...
+# Agents re-analyze automatically
+
+/hive                     # Check findings anytime
+/fix                      # Fix issues as they appear
+# Loop continues...
+
+/stop                     # Stop when done
+```
+
+### Focused Analysis
+
+```bash
+cd my-large-monorepo
+/swarm review --focus packages/auth    # Only analyze auth package
+```
+
+## Watch Mode
+
+Keep agents running continuously for real-time feedback during development.
+
+```bash
+/swarm figma --watch
+```
+
+**How it works:**
+1. Agents perform initial analysis
+2. Then watch for file changes
+3. When you edit files, affected code is re-analyzed
+4. New findings appear when you run `/hive`
+
+**Best for:**
+- Active development sessions
+- Refactoring work
+- When you want continuous feedback
+
+## Focus Mode
+
+Limit analysis to specific paths in large codebases.
+
+```bash
+/swarm --focus src/components    # Only analyze components
+/swarm --focus packages/api      # Only analyze API package
+```
+
+**Best for:**
+- Monorepos with many packages
+- Working on specific features
+- Reducing noise from unrelated code
 
 ## Tips
 

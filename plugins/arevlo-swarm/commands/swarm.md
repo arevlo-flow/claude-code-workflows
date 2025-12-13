@@ -8,8 +8,12 @@ Start a multi-agent swarm for parallel task execution. Agents run in separate te
 ## Usage
 
 ```
-/swarm [preset]
+/swarm [preset] [--watch] [--focus <path>]
 ```
+
+**Flags:**
+- `--watch` - Keep agents running continuously, re-analyze on file changes
+- `--focus <path>` - Only analyze files in specified path (e.g., `--focus src/components`)
 
 **Presets:**
 - `review` - General code review (reviewer + simplifier + comment-analyzer)
@@ -186,9 +190,65 @@ Figma plugin development (example of domain-specific preset).
 }
 ```
 
+## Watch Mode
+
+When `--watch` flag is used, agents run continuously and re-analyze when files change.
+
+**Behavior:**
+- Agents stay running after initial analysis
+- File changes trigger re-analysis of affected files
+- New findings are appended to reports
+- Use `/hive` to see latest findings at any time
+
+**Watch mode workflow:**
+```
+┌─────────────────────────────────────────────────────────┐
+│  SWARM (watch mode)                                     │
+│                                                         │
+│  Agents are watching for changes...                     │
+│  Last analysis: 2 min ago                               │
+│                                                         │
+│  You: [make code changes]                               │
+│  Agents: [re-analyze changed files]                     │
+│  You: /hive → see new findings                          │
+│  You: /fix → address issues                             │
+│  Agents: [re-analyze fixed files]                       │
+│  ...continuous feedback loop...                         │
+│                                                         │
+│  Use /swarm stop to end watch mode                      │
+└─────────────────────────────────────────────────────────┘
+```
+
+**When to use watch mode:**
+- During active development sessions
+- When refactoring large portions of code
+- When you want continuous feedback as you code
+
+**When NOT to use watch mode:**
+- One-time code review before PR
+- Quick analysis of unfamiliar codebase
+- Resource-constrained environments
+
+## Focus Mode
+
+When `--focus <path>` flag is used, agents only analyze files in the specified path.
+
+**Examples:**
+```bash
+/swarm figma --focus src/components    # Only analyze components
+/swarm review --focus src/api          # Only review API code
+/swarm --focus src/features/auth       # Focus on auth feature
+```
+
+**Use cases:**
+- Large monorepo with many packages
+- Working on specific feature area
+- Reducing noise from unrelated code
+
 ## Notes
 
 - Requires Claude Code with `--dangerously-skip-permissions` enabled
 - Agents write to `.claude/swarm/reports/` for async review
 - Use `/hive` to check agent status and findings
 - Use `/sync` to consolidate findings into actionable items
+- Use `/fix` to interactively address issues one by one
