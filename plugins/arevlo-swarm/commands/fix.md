@@ -3,18 +3,19 @@ description: Interactive fix mode - address swarm findings one by one
 allowed-tools: Bash,Read,Write,Edit,AskUserQuestion,Glob,Grep
 ---
 
-Interactive mode to fix issues found by swarm agents, one at a time.
+Fix issues found by swarm agents. Choose between manual mode (one at a time) or automatic mode (fix all).
 
 ## Usage
 
 ```
-/fix [--critical] [--file <path>] [--agent <name>]
+/fix [--critical] [--file <path>] [--agent <name>] [--auto]
 ```
 
 **Arguments:**
 - `--critical` - Only show P0/HIGH priority issues (default)
 - `--file <path>` - Only show issues in specific file
 - `--agent <name>` - Only show issues from specific agent
+- `--auto` - Skip mode selection and run automatic mode directly
 
 ## Steps:
 
@@ -34,7 +35,27 @@ Interactive mode to fix issues found by swarm agents, one at a time.
    6. [HIGH] index.ts:206 - No runtime validation for messages
    ```
 
-3. **Present first issue:**
+3. **Ask for fix mode (unless --auto flag provided):**
+
+   Use AskUserQuestion tool:
+   ```json
+   {
+     "questions": [{
+       "question": "How would you like to fix these 6 issues?",
+       "header": "Fix Mode",
+       "options": [
+         {"label": "Manual (Recommended)", "description": "Review and fix issues one at a time with options to skip"},
+         {"label": "Automatic", "description": "Fix all issues automatically, show summary at end"}
+       ],
+       "multiSelect": false
+     }]
+   }
+   ```
+
+   **If "Manual":** Continue to step 4 (interactive mode)
+   **If "Automatic":** Jump to step 8 (automatic mode)
+
+4. **[MANUAL MODE] Present first issue:**
    ```
    ┌─────────────────────────────────────────────────────────┐
    │  ISSUE 1/6 [P0]                                         │
@@ -56,7 +77,7 @@ Interactive mode to fix issues found by swarm agents, one at a time.
    └─────────────────────────────────────────────────────────┘
    ```
 
-4. **Ask user how to proceed:**
+5. **[MANUAL MODE] Ask user how to proceed:**
 
    Use AskUserQuestion tool:
    ```json
@@ -75,7 +96,7 @@ Interactive mode to fix issues found by swarm agents, one at a time.
    }
    ```
 
-5. **Based on response:**
+6. **[MANUAL MODE] Based on response:**
 
    **If "Fix it":**
    - Read the file at the specified location
@@ -113,12 +134,57 @@ Interactive mode to fix issues found by swarm agents, one at a time.
    - Show summary of completed/skipped issues
    - Exit command
 
-6. **Continue until queue empty or user exits**
+7. **[MANUAL MODE] Continue until queue empty or user exits**
 
-7. **Show completion summary:**
+---
+
+## Automatic Mode
+
+8. **[AUTOMATIC MODE] Process all issues:**
+
+   When automatic mode is selected (or `--auto` flag used):
+
    ```
    ┌─────────────────────────────────────────────────────────┐
-   │  FIX MODE COMPLETE                                      │
+   │  AUTOMATIC FIX MODE                                     │
+   │                                                         │
+   │  Processing 6 issues...                                 │
+   └─────────────────────────────────────────────────────────┘
+   ```
+
+   For each issue in the queue:
+   - Display brief progress: `[1/6] Fixing: main.ts:56-57 - Unhandled async...`
+   - Read the file at the specified location
+   - Analyze the issue in context
+   - Implement the fix using Edit tool
+   - Track success/failure for each issue
+   - Continue to next issue immediately (no user prompts)
+
+   During processing, show progress updates:
+   ```
+   [1/6] ✓ Fixed: main.ts:56-57 - Unhandled async message handler
+   [2/6] ✓ Fixed: collector.ts:225 - Page load failures in global mode
+   [3/6] ✗ Failed: index.ts:6-19 - Could not determine safe fix
+   [4/6] ✓ Fixed: main.ts:44-46 - Unsafe SceneNode assertion
+   [5/6] ✓ Fixed: collector.ts:147 - Untyped boundVariables cast
+   [6/6] ✓ Fixed: index.ts:206 - No runtime validation for messages
+   ```
+
+   **Handling failures:**
+   - If a fix cannot be safely applied, mark as failed and continue
+   - Track failed issues separately for manual review
+   - Don't stop on errors - complete the entire queue
+
+---
+
+## Completion Summary
+
+9. **Show completion summary:**
+
+   **Manual mode summary:**
+   ```
+   ┌─────────────────────────────────────────────────────────┐
+   │  FIX MODE COMPLETE (Manual)                             │
    │                                                         │
    │  Fixed: 4 issues                                        │
    │  Skipped: 2 issues                                      │
@@ -130,6 +196,30 @@ Interactive mode to fix issues found by swarm agents, one at a time.
    │                                                         │
    │  Skipped issues saved to:                               │
    │  .claude/swarm/skipped.md                               │
+   │                                                         │
+   │  Run tests to verify fixes: npm test                    │
+   └─────────────────────────────────────────────────────────┘
+   ```
+
+   **Automatic mode summary:**
+   ```
+   ┌─────────────────────────────────────────────────────────┐
+   │  FIX MODE COMPLETE (Automatic)                          │
+   │                                                         │
+   │  ✓ Fixed: 5 issues                                      │
+   │  ✗ Failed: 1 issue                                      │
+   │                                                         │
+   │  Files modified:                                        │
+   │  - main.ts (2 fixes)                                    │
+   │  - collector.ts (2 fixes)                               │
+   │  - index.ts (1 fix)                                     │
+   │                                                         │
+   │  Failed issues (require manual review):                 │
+   │  - index.ts:6-19 - DOM elements without null checks     │
+   │    Reason: Multiple DOM operations, unclear scope       │
+   │                                                         │
+   │  Failed issues saved to:                                │
+   │  .claude/swarm/failed.md                                │
    │                                                         │
    │  Run tests to verify fixes: npm test                    │
    └─────────────────────────────────────────────────────────┘
@@ -158,10 +248,25 @@ Interactive mode to fix issues found by swarm agents, one at a time.
 - Add nullish coalescing (`??`)
 - Add explicit null checks with early returns
 
+## When to Use Each Mode
+
+**Manual mode** (recommended for most cases):
+- First time running fix on a codebase
+- When you want to understand each fix
+- For complex issues that need careful review
+- When learning what types of issues exist
+
+**Automatic mode:**
+- When you trust the agent findings and want to fix everything
+- For well-understood codebases with standard patterns
+- When time is limited and you'll review diffs in git later
+- Run with `--auto` flag to skip the mode selection prompt
+
 ## Notes
 
 - Fix mode reads issues from swarm reports
 - All fixes are made using the Edit tool (shows diffs)
-- Skipped issues are saved for later review
+- Skipped issues (manual) saved to `.claude/swarm/skipped.md`
+- Failed issues (auto) saved to `.claude/swarm/failed.md`
 - After fixing, agents will re-analyze if in watch mode
 - Run tests after completing fix mode to verify changes

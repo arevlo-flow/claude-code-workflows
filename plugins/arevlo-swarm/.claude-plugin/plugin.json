@@ -1,5 +1,5 @@
 {
   "name": "arevlo-swarm",
-  "description": "Multi-agent orchestration for parallel workflows - spawn background agents for code review, analysis, and interactive fixing",
-  "version": "1.3.0"
+  "description": "Multi-agent orchestration for parallel workflows - spawn background agents for code review, analysis, and manual or automatic fixing",
+  "version": "1.4.0"
 }
