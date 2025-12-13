@@ -1,6 +1,6 @@
 # Claude Code Workflows
 
-A curated collection of Claude Code plugins with slash commands for design-to-code workflows, context management, and development best practices.
+A curated collection of Claude Code plugins with slash commands for design-to-code workflows, context management, multi-agent orchestration, and development best practices.
 
 ## Installation
 
@@ -18,6 +18,7 @@ Or use commands directly:
 /plugin install arevlo-design@claude-code-workflows
 /plugin install arevlo-context@claude-code-workflows
 /plugin install arevlo-dev@claude-code-workflows
+/plugin install arevlo-swarm@claude-code-workflows
 ```
 
 ## Updating
@@ -65,6 +66,20 @@ Git commit workflows and development best practices.
 
 > **Requires:** [GitHub CLI](#github-cli-setup)
 
+### arevlo-swarm
+
+Multi-agent orchestration for parallel code analysis.
+
+- `/swarm [preset]` - Start multi-agent swarm (presets: `figma`, `review`, `full`)
+- `/spawn <agent>` - Spawn a single background agent
+- `/hive` - Check status and findings from all agents
+- `/sync` - Consolidate findings into prioritized action items
+- `/stop [agent]` - Stop one or all running agents
+
+**Available agents:** reviewer, simplifier, type-analyzer, silent-hunter, comment-analyzer, test-analyzer
+
+> **Requires:** `--dangerously-skip-permissions` enabled
+
 ## Workflows
 
 ### Design Workflow (Figma Make)
@@ -89,6 +104,28 @@ Claude Code               Notion                  Figma Make
 4. **Iterate** - Use Figma Make to implement and refine
 
 > **Note:** Figma Make pushes directly to GitHub. Committing happens separately in Claude Code.
+
+### Multi-Agent Workflow (Swarm)
+
+```
+/swarm figma              Background Agents         Your Session
+    |                           |                       |
+    |-- spawn reviewer -------->|                       |
+    |-- spawn type-analyzer --->|                       |
+    |-- spawn silent-hunter --->|                       |
+    |                           |                       |
+    |                           |-- analyze code ------>|
+    |                           |-- write reports ----->|
+    |                           |                       |
+    |<-- /hive (check status) --|                       |
+    |<-- /sync (consolidate) ---|                       |
+```
+
+1. **Start swarm** - `/swarm figma` for Figma plugin development
+2. **Work normally** - Agents analyze in background
+3. **Check progress** - `/hive` to see findings
+4. **Consolidate** - `/sync` for prioritized action list
+5. **Stop** - `/stop` when done
 
 ### Commit Workflow
 
@@ -151,6 +188,8 @@ Most plugins reference specific Notion database names and data source IDs. Updat
 1. Database names (default: `_make`, `_clawd`)
 2. Data source IDs
 3. Project name mappings
+
+For swarm agents, customize behavior by editing files in `plugins/arevlo-swarm/agents/`.
 
 ## Contributing
 
