@@ -36,6 +36,24 @@ Example follow-ups:
 
 ## Workflow
 
+### Step 0: Check for Recent Activity
+
+If a prompt was recently created for this project (within current session), ask:
+
+```
+"I see you recently created a prompt. Would you like to:"
+
+1. Modify the existing prompt
+2. Create a new prompt
+3. Exit
+```
+
+- If **Modify**: Open the existing prompt for editing
+- If **Create new**: Continue to Step 1
+- If **Exit**: End the workflow
+
+This ensures you can always create a new prompt even if one was just made.
+
 ### Step 1: Select Make Project
 
 1. List folders matching `[Make]*` pattern in the configured `make_projects_path`
