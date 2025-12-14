@@ -57,11 +57,24 @@ Options:
 
 ### Step 1: Select Make Project
 
-1. List folders matching `[Make]*` pattern in the configured `make_projects_path`
-2. Present as a picker using AskUserQuestion:
-   - Show discovered project names (e.g., "Unit Pricing", "Workflows x Maintenance")
-   - Include "Other" option for custom project name
-3. Selected project is used for Notion tags and filenames only (don't change directories)
+**Auto-detect from context:**
+1. Check **branch name** for project reference (e.g., `arevlo.feat-waves-ui` → "Waves")
+2. Check **current directory** name (e.g., `make-prototypes` → look for matching Make project)
+3. Do NOT assume from repo name alone
+
+**Always confirm with picker** even if auto-detected:
+
+```
+Question: "Which Make project is this for?"
+
+Options:
+1. [Auto-detected] Waves - (detected from branch name)
+2. Choose a different project
+```
+
+If user chooses "different project", show full list from `make_projects_path`.
+
+**Project is used for:** Notion tags and prompt organization only (don't change directories)
 
 ### Step 2: Describe What to Build
 
