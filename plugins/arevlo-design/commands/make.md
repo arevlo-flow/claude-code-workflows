@@ -49,42 +49,32 @@ Example follow-ups:
 Ask the user with a free-form prompt:
 > "Describe what you want to build. Include the problem you're solving, any constraints, files involved, and desired outcome."
 
-### Step 3: Visual/Design Reference
+### Step 3: Figma Context
 
-**Always ask** for visual context using AskUserQuestion with these options:
-
-```
-"Do you have a visual reference for styling/layout?"
+**Always ask:** "Do you want to add Figma context? You can paste a component link for styling/layout reference."
 
 Options:
-1. Paste Figma URL - I have a component link to share
-2. Use Figma selection - Use what's selected in Figma desktop
-3. Add screenshot - I'll paste a screenshot path
-4. Skip - No visual reference needed
-```
+1. **Yes, paste Figma link** - I'll share a component URL
+2. **Add screenshot instead** - I'll paste a screenshot path
+3. **Skip** - No visual reference needed
 
-**If Figma URL:**
+**If Figma link:**
 - User pastes a Figma component URL (e.g., `https://figma.com/design/.../node-id=123:456`)
 - Extract node ID from URL
 - Use `mcp__figma-desktop__get_design_context` with that nodeId
 - Use `mcp__figma-desktop__get_variable_defs` for design tokens
 - Extract: colors, spacing, typography, layout structure
-
-**If Figma selection:**
-- Use `mcp__figma-desktop__get_design_context` without nodeId (uses current selection)
-- Use `mcp__figma-desktop__get_variable_defs` for tokens
-- Use `mcp__figma-desktop__get_screenshot` for visual reference
+- Include these in the generated prompt
 
 **If screenshot:**
-- Ask user for screenshot path (e.g., `/tmp/screenshot.png` or drag-dropped path)
-- Use `Read` tool to view the image (Claude Code supports image reading)
-- Describe the visual elements, layout, and styling from the screenshot
-- Include these observations in the generated prompt
+- Ask for screenshot path
+- Use `Read` tool to view the image
+- Describe visual elements and include in prompt
 
 **Include in prompt:**
 - Design tokens (colors, spacing, typography)
-- Layout structure (flexbox, grid patterns)
-- Visual mockup reference link or description
+- Layout structure
+- Link to Figma component (if provided)
 
 ### Step 4: Deep Codebase Analysis
 
