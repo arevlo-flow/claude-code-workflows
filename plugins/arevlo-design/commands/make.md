@@ -10,6 +10,22 @@ Create optimized prompts for Figma Make through an interactive research workflow
 
 ---
 
+## Interaction Guidelines
+
+**This workflow is interactive.** Use `AskUserQuestion` throughout:
+
+- **Always ask** at decision points (don't assume or skip)
+- **Offer clear options** with descriptions, not yes/no questions
+- **Follow up** when answers are vague or incomplete
+- **Confirm understanding** before generating the final prompt
+
+Example follow-ups:
+- "You mentioned styling - do you have a Figma component or screenshot to reference?"
+- "I found 3 related components. Which patterns should I follow?"
+- "The recent prompt modified this file. Should I build on those changes?"
+
+---
+
 ## Configuration
 
 - **Notion database**: `_make` (for prompts)
@@ -33,17 +49,42 @@ Create optimized prompts for Figma Make through an interactive research workflow
 Ask the user with a free-form prompt:
 > "Describe what you want to build. Include the problem you're solving, any constraints, files involved, and desired outcome."
 
-### Step 3: Figma Reference (Optional)
+### Step 3: Visual/Design Reference
 
-Ask: "Do you want to reference a Figma component for design context?"
+**Always ask** for visual context using AskUserQuestion with these options:
 
-If yes:
-- Ask for Figma URL or use currently selected component
-- Use `mcp__figma-desktop__get_design_context` to analyze the component
-- Use `mcp__figma-desktop__get_variable_defs` to get design tokens
-- Optionally use `mcp__figma-desktop__get_screenshot` for visual reference
+```
+"Do you have a visual reference for styling/layout?"
+
+Options:
+1. Paste Figma URL - I have a component link to share
+2. Use Figma selection - Use what's selected in Figma desktop
+3. Add screenshot - I'll paste a screenshot path
+4. Skip - No visual reference needed
+```
+
+**If Figma URL:**
+- User pastes a Figma component URL (e.g., `https://figma.com/design/.../node-id=123:456`)
+- Extract node ID from URL
+- Use `mcp__figma-desktop__get_design_context` with that nodeId
+- Use `mcp__figma-desktop__get_variable_defs` for design tokens
 - Extract: colors, spacing, typography, layout structure
-- Include these design specs in the generated prompt
+
+**If Figma selection:**
+- Use `mcp__figma-desktop__get_design_context` without nodeId (uses current selection)
+- Use `mcp__figma-desktop__get_variable_defs` for tokens
+- Use `mcp__figma-desktop__get_screenshot` for visual reference
+
+**If screenshot:**
+- Ask user for screenshot path (e.g., `/tmp/screenshot.png` or drag-dropped path)
+- Use `Read` tool to view the image (Claude Code supports image reading)
+- Describe the visual elements, layout, and styling from the screenshot
+- Include these observations in the generated prompt
+
+**Include in prompt:**
+- Design tokens (colors, spacing, typography)
+- Layout structure (flexbox, grid patterns)
+- Visual mockup reference link or description
 
 ### Step 4: Deep Codebase Analysis
 
@@ -69,14 +110,44 @@ Benefits of Explore subagent:
 - Read-only mode (can't accidentally modify code)
 - Isolated context (findings returned without bloating main context)
 
-### Step 5: Notion Context Search
+### Step 5: Context & State Resolution
 
-Search both databases for relevant context:
+**IMPORTANT:** The codebase may not reflect the latest state. Same-day prompts may have already been implemented in Figma Make but not yet downloaded/pushed to the repo.
+
+#### 5a. Search for same-day prompts first
+
+Search `_make` with date filter for today's date and the selected project:
+- Use `mcp__notion__notion-search` with `filters.created_date_range.start_date` = today
+- Filter by project name
+
+If same-day prompts exist that touch the same files you're modifying:
+1. **Fetch full prompt content** using `mcp__notion__notion-fetch`
+2. **Parse "Desired State" sections** for the relevant files
+3. **Use those as "Current State"** in the new prompt (since they're already implemented)
+4. **Link to the source prompt** so Claude knows where the context came from
+
+Example "Current State" when sourced from recent prompt:
+```markdown
+**Current State** (from today's prompt: [Prompt: Add Tab Pinning](notion-url)):
+```tsx
+// Code from that prompt's "Desired State" section
+```
+```
+
+#### 5b. Search for specs and older prompts
 
 1. **Search `_clawd`** for specs/context related to the project
-2. **Search `_make`** for previous prompts on the same project
+2. **Search `_make`** for older prompts on the same project (for patterns/context)
 
 Present top matches and let user confirm which to include as references.
+
+#### 5c. State resolution priority
+
+When determining "Current State" for a file:
+1. **Same-day prompts** (highest priority) - use their "Desired State"
+2. **Codebase analysis** (fallback) - use actual code from repo
+
+If using prompt-sourced state, always note this in the generated prompt so Figma Make knows the context source.
 
 ### Step 6: Choose Destination
 
@@ -262,3 +333,4 @@ Figma Make uses Claude under the hood. This template:
 8. **Notion links** - Claude can fetch full specs via MCP
 9. **Design tokens block** - No hardcoded values
 10. **Success criteria** - Clear definition of "done"
+11. **State resolution from prompts** - Same-day prompts take precedence over stale codebase since Figma Make implements changes before they're pushed to the repo
