@@ -1,0 +1,5 @@
+{
+  "name": "clawd-eyes",
+  "description": "Visual browser inspector for Claude Code - start/stop servers, check status",
+  "version": "1.0.0"
+}

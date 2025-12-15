@@ -22,6 +22,10 @@
     {
       "name": "arevlo-swarm",
       "source": "./plugins/arevlo-swarm"
+    },
+    {
+      "name": "clawd-eyes",
+      "source": "./plugins/clawd-eyes"
     }
   ]
 }
