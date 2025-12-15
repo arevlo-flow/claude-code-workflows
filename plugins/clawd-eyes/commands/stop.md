@@ -11,12 +11,15 @@ Stop all clawd-eyes processes and free up the ports.
 
 1. **Kill processes on all clawd-eyes ports**
    ```bash
-   lsof -ti :4000 :4001 :5173 :9222 | xargs kill -9 2>/dev/null
+   lsof -ti :4000 | xargs kill -9 2>/dev/null
+   lsof -ti :4001 | xargs kill -9 2>/dev/null
+   lsof -ti :5173 | xargs kill -9 2>/dev/null
+   lsof -ti :9222 | xargs kill -9 2>/dev/null
    ```
 
 2. **Verify ports are free**
    ```bash
-   lsof -i :4000 -i :4001 -i :5173 -i :9222 2>/dev/null | grep LISTEN || echo "All ports free"
+   lsof -i :4000 2>/dev/null | grep LISTEN || lsof -i :4001 2>/dev/null | grep LISTEN || lsof -i :5173 2>/dev/null | grep LISTEN || lsof -i :9222 2>/dev/null | grep LISTEN || echo "All ports free"
    ```
 
 3. **Report to user**
