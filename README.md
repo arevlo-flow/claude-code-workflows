@@ -19,6 +19,7 @@ Or use commands directly:
 /plugin install arevlo-context@claude-code-workflows
 /plugin install arevlo-dev@claude-code-workflows
 /plugin install arevlo-swarm@claude-code-workflows
+/plugin install clawd-eyes@claude-code-workflows
 ```
 
 ## Updating
@@ -82,6 +83,17 @@ Multi-agent orchestration for parallel code analysis. Works with any project typ
 **Agents:** reviewer, simplifier, type-analyzer, silent-hunter, comment-analyzer, test-analyzer
 
 > **Requires:** `--dangerously-skip-permissions` enabled
+
+### clawd-eyes
+
+Visual browser inspector for Claude Code. Control the clawd-eyes servers.
+
+- `/clawd-eyes:start` - Start backend and web UI servers
+- `/clawd-eyes:stop` - Stop all servers (kills processes on ports 4000, 4001, 5173, 9222)
+- `/clawd-eyes:status` - Check if servers are running
+- `/clawd-eyes:open` - Open web UI in browser
+
+> **Requires:** [clawd-eyes](https://github.com/arevlo/clawd-eyes) project installed locally
 
 ## Workflows
 
