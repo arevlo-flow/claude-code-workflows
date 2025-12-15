@@ -1,53 +1,39 @@
 ---
-description: Stop all clawd-eyes servers by killing processes on their ports
+description: Stop clawd-eyes processes and free ports
 allowed-tools: Bash
 ---
 
-# Stop Clawd-Eyes
+# Stop clawd-eyes
 
-Stop all clawd-eyes servers by killing processes on the ports they use.
-
-## Ports to Kill
-
-| Port | Service |
-|------|---------|
-| 4000 | HTTP API |
-| 4001 | WebSocket |
-| 5173 | Web UI (Vite) |
-| 9222 | Chrome DevTools Protocol |
+Stop all clawd-eyes processes and free up the ports.
 
 ## Instructions
 
-1. For each port (4000, 4001, 5173, 9222):
-   - Check if anything is running: `lsof -ti :PORT`
-   - If a process is found, kill it: `kill -9 $(lsof -ti :PORT)`
+1. **Find and kill processes on each port**
 
-2. Run this command to kill all clawd-eyes ports at once:
+   For each port (4000, 4001, 5173, 9222):
    ```bash
-   for port in 4000 4001 5173 9222; do
-     pid=$(lsof -ti :$port 2>/dev/null)
-     if [ -n "$pid" ]; then
-       echo "Killing process on port $port (PID: $pid)"
-       kill -9 $pid 2>/dev/null
-     fi
-   done
+   lsof -ti :<port> | xargs kill -9 2>/dev/null
    ```
 
-3. Verify all ports are now free:
+2. **Verify ports are free**
    ```bash
-   for port in 4000 4001 5173 9222; do
-     if lsof -ti :$port >/dev/null 2>&1; then
-       echo "Port $port still in use"
-     else
-       echo "Port $port is free"
-     fi
-   done
+   lsof -i :4000,:4001,:5173,:9222
    ```
+   Should return empty if all processes stopped.
 
-4. Report which processes were killed and confirm all servers are stopped
+3. **Report to user**
+   - Confirm which processes were stopped
+   - Confirm all ports are now free
+
+## Quick One-Liner
+
+```bash
+lsof -ti :4000,:4001,:5173,:9222 | xargs kill -9 2>/dev/null; echo "clawd-eyes stopped"
+```
 
 ## Notes
 
-- This will forcefully terminate any process on these ports
-- If the Chromium browser was launched by clawd-eyes, it will be closed
-- Safe to run even if servers aren't running (will just report ports are free)
+- Some ports may already be free - that's fine
+- The 9222 port is Chrome's CDP port, killing it closes the browser
+- After stopping, you can restart with `/clawd-eyes:start`

@@ -1,54 +1,47 @@
 ---
-description: Start clawd-eyes backend server and web UI
-allowed-tools: Bash,Glob,AskUserQuestion
+description: Start clawd-eyes visual browser inspector
+allowed-tools: Bash,TodoWrite
 ---
 
-# Start Clawd-Eyes
+# Start clawd-eyes
 
-Start the clawd-eyes visual browser inspector servers.
+Start the clawd-eyes visual browser inspector. This will clear any existing processes on the required ports and start the backend server and web UI.
 
 ## Instructions
 
-1. **Find the clawd-eyes project:**
-   - Search for a directory containing `clawd-eyes` with a `package.json` that has `"name": "clawd-eyes"`
-   - Check common locations: current directory, parent directories, or ask the user
-   - If not found, ask the user for the path to their clawd-eyes installation
+1. **Kill existing processes on clawd-eyes ports**
+   - Check ports 4000, 4001, 5173, 9222
+   - Kill any processes using these ports with `kill -9`
 
-2. **Check if servers are already running** on the ports:
-   - Port 4000 (HTTP API)
-   - Port 4001 (WebSocket)
-   - Port 5173 (Web UI)
-   - Port 9222 (Chrome DevTools)
-
-3. If any ports are in use, inform the user and suggest running `/clawd-eyes:stop` first
-
-4. If ports are free, start the servers from the clawd-eyes directory:
-
-   **Start backend** (in background):
+2. **Navigate to clawd-eyes directory**
    ```bash
-   cd <clawd-eyes-path> && npm start &
+   cd ~/Desktop/personal-repos/clawd-eyes
    ```
 
-   **Start web UI** (in background):
+3. **Check if dependencies are installed**
+   - If `node_modules` doesn't exist, run `npm install`
+   - If `web/node_modules` doesn't exist, run `cd web && npm install`
+
+4. **Start the backend server in background**
    ```bash
-   cd <clawd-eyes-path>/web && npm run dev &
+   npm start &
    ```
+   This launches the Playwright browser and WebSocket server on ports 4000/4001/9222.
 
-5. Wait a few seconds for servers to start
+5. **Start the web UI in background**
+   ```bash
+   cd web && npm run dev &
+   ```
+   This starts Vite dev server on port 5173.
 
-6. Report the status:
-   - Backend API: http://localhost:4000
-   - WebSocket: ws://localhost:4001
+6. **Report to user**
+   - Backend: http://localhost:4000 (API), ws://localhost:4001 (WebSocket)
    - Web UI: http://localhost:5173
    - CDP: ws://localhost:9222
 
-7. Inform the user they can open http://localhost:5173 in their browser
+## Notes
 
-## Ports Used
-
-| Port | Service |
-|------|---------|
-| 4000 | HTTP API |
-| 4001 | WebSocket (live updates) |
-| 5173 | Web UI (Vite dev server) |
-| 9222 | Chrome DevTools Protocol |
+- The backend must be started before the web UI
+- Wait ~2 seconds between starting backend and web UI
+- Use `lsof -i :<port>` to check what's using a port
+- All processes run in background - use `/clawd-eyes:stop` to stop them
