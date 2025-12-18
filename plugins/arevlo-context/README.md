@@ -23,7 +23,7 @@ Slash commands for saving and loading Claude Code session context and plans to m
 | Notion | Persistent storage in your Notion database |
 | GitHub Issue | Create an issue in the current repo for tracking |
 | Docs folder | Save to `./docs/context/` in your project |
-| Claude Plans | Plans from `~/.claude/plans/` or `~/.claude-personal/plans/` |
+| Claude Plans | Plans from `~/.claude/plans/` |
 
 ## Requirements
 

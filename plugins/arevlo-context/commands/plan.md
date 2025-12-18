@@ -18,11 +18,9 @@ Manage Claude Code plans - load from multiple sources, save for context preserva
 First, detect the active Claude plans directory:
 
 ```bash
-# Check which plans directory exists
-if [ -d "$HOME/.claude-personal/plans" ]; then
-  echo "personal: $HOME/.claude-personal/plans"
-elif [ -d "$HOME/.claude/plans" ]; then
-  echo "standard: $HOME/.claude/plans"
+# Check if plans directory exists
+if [ -d "$HOME/.claude/plans" ]; then
+  echo "$HOME/.claude/plans"
 else
   echo "none"
 fi
@@ -96,7 +94,7 @@ Save the current conversation's plan to a chosen destination for context preserv
 
 Check if there's an active plan file mentioned in the conversation:
 - Look for plan file paths in recent system messages
-- Check if `$HOME/.claude-personal/plans/` or `$HOME/.claude/plans/` has any recently modified files (< 1 hour)
+- Check if `$HOME/.claude/plans/` has any recently modified files (< 1 hour)
 
 If a plan file is found:
 - Read its content

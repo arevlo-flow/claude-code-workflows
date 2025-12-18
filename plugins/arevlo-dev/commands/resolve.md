@@ -269,14 +269,14 @@ Starting interactive resolution...
 [File 1 of 2] README.md
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-📍 Context: Documentation update for new command names
+📍 Context: Documentation update for dev scripts
 
 HEAD VERSION (Your changes):
-npm run dev:workflows   # Workflows (port 3000)
-npm run dev:facilities  # Facilities (port 3001)
+npm run dev:api    # API server (port 3000)
+npm run dev:web    # Web client (port 3001)
 
 INCOMING VERSION (Their changes):
-npm run dev:workflows   # Workflows x Facilities (port 3000)
+npm run dev        # Combined dev server (port 3000)
 
 What would you like to do?
 1. Keep HEAD - use your updated command names
@@ -299,11 +299,11 @@ This will discard changes from the incoming version. Continue? (yes/no)
 📍 Context: Configuration conflict in dev scripts
 
 HEAD VERSION (Your changes):
-"dev:workflows": "npm run dev -w @make-prototypes/workflows",
-"dev:facilities": "npm run dev -w @make-prototypes/facilities",
+"dev:api": "npm run dev -w @myapp/api",
+"dev:web": "npm run dev -w @myapp/web",
 
 INCOMING VERSION (Their changes):
-"dev:workflows": "npm run dev -w @make-prototypes/workflows-x-facilities",
+"dev": "npm run dev -w @myapp/combined",
 
 What would you like to do?
 1. Keep HEAD

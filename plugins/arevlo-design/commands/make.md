@@ -60,9 +60,9 @@ Options:
 **THIS MUST BE THE FIRST QUESTION. Do NOT ask about entry type first.**
 
 **Auto-detect from context:**
-1. Check **branch name** for project reference (e.g., `arevlo.feat-waves-ui` → "Waves")
-2. Check **current directory** name (e.g., `make-prototypes` could be "Prototypes" project)
-3. Do NOT assume "Flowmingo" or repo name - that's the workspace, not the Make project
+1. Check **branch name** for project reference (e.g., `feat-dashboard-ui` → "Dashboard")
+2. Check **current directory** name for hints
+3. Do NOT assume repo name is the Make project - that's often the workspace name
 
 **Use AskUserQuestion immediately:**
 
@@ -70,8 +70,8 @@ Options:
 Question: "Which Make project is this for?"
 
 Options:
-1. Waves - (detected from branch: arevlo.feat-waves-ui)
-2. Prototypes - (detected from directory: make-prototypes)
+1. [Project A] - (detected from branch or directory)
+2. [Project B] - (detected from context)
 3. Choose a different project - Let me pick from the list
 ```
 

@@ -21,7 +21,7 @@ Run these checks silently to determine which options to show:
 - **GitHub Issues:** Check if in a git repo with remote: `git remote get-url origin`
 - **Docs folder:** Check if `docs/context/` directory exists using Glob
 - **Plans folder:** Check if `plans/` directory exists using Glob
-- **Claude Plans:** Check if `~/.claude-personal/plans/` OR `~/.claude/plans/` directory exists
+- **Claude Plans:** Check if `~/.claude/plans/` directory exists
 
 ### 2. Show source picker
 ALWAYS ask the user where to search - present available options:
@@ -85,9 +85,7 @@ Select source:
 - Display filenames (plans are typically named by feature/topic)
 
 **If Claude Plans:**
-- Detect plans directory:
-  - Check `~/.claude-personal/plans/` first (personal config)
-  - Fall back to `~/.claude/plans/` (standard config)
+- Detect plans directory: `~/.claude/plans/`
 - List files using Bash: `ls -lt {plans_dir}/*.md | head -20` (sorted by modified date)
 - For each plan file, extract metadata:
   - **Title:** First line starting with `#` (use `head -1`)

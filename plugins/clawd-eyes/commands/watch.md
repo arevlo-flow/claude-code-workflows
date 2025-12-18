@@ -16,12 +16,12 @@ Monitor for incoming design requests from the clawd-eyes web UI.
    If not running, tell user to run `/clawd-eyes:start` first.
 
 2. **Find the clawd-eyes data directory**
-   - Look for `~/Desktop/personal-repos/clawd-eyes/data/pending-request.json`
-   - Or search for the clawd-eyes project directory
+   - Look for `~/clawd-eyes/data/pending-request.json`
+   - Or search common locations: `~/Desktop/clawd-eyes`, `~/projects/clawd-eyes`
 
 3. **Check for pending request**
    ```bash
-   cat ~/Desktop/personal-repos/clawd-eyes/data/pending-request.json 2>/dev/null
+   cat ~/clawd-eyes/data/pending-request.json 2>/dev/null
    ```
 
 4. **If request exists:**

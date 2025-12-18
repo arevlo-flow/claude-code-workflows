@@ -23,7 +23,7 @@ Slash commands for managing clawd-eyes visual browser inspector.
 
 ## Requirements
 
-- clawd-eyes repo cloned to `~/Desktop/personal-repos/clawd-eyes`
+- clawd-eyes repo cloned locally (default: `~/clawd-eyes`)
 - Node.js installed
 - Dependencies installed (`npm install` in both root and `web/` directories)
 
