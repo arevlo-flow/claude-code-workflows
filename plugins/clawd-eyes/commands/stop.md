@@ -22,7 +22,7 @@ Stop all clawd-eyes processes and free up the ports.
 3. **Report to user**
    - Confirm processes were stopped
    - Confirm all ports are now free
-   - The browser window will close automatically
+   - Note: The user's browser stays open (clawd-eyes only disconnects from it)
 
 ## Ports Killed
 
@@ -35,5 +35,5 @@ Stop all clawd-eyes processes and free up the ports.
 ## Notes
 
 - Some ports may already be free - that's fine
-- Killing the backend also closes the browser (managed by Playwright)
+- The user's browser stays open - clawd-eyes only disconnects from CDP
 - After stopping, restart with `/clawd-eyes:start`
