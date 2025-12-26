@@ -1,44 +1,99 @@
 #!/bin/bash
-# Initialize swarm workspace and check for prior session exports
-# Part of swarm context awareness system
+# Session initialization - called at SessionStart hook
+# Sets up context tracking for new session
+#
+# Receives JSON via stdin with session information:
+#   - session_id: Current session ID
+#   - cwd: Current working directory
+#
+# Creates guardian directory structure and initializes metrics
 
-SWARM_DIR=".claude/swarm"
+set -e
+
+# Read JSON input from stdin
+input=$(cat)
+
+# Parse JSON fields
+if command -v jq &> /dev/null; then
+    SESSION_ID=$(echo "$input" | jq -r '.session_id // empty')
+    CWD=$(echo "$input" | jq -r '.cwd // empty')
+else
+    SESSION_ID=""
+    CWD=$(pwd)
+fi
+
+# Set working directory
+if [ -n "$CWD" ]; then
+    cd "$CWD" 2>/dev/null || true
+fi
 
 # Create directory structure
-mkdir -p "$SWARM_DIR"/{exports,progress,guardian,research,plans,context,handoff}
+mkdir -p .claude/swarm/{guardian,context,progress,reports,research,plans}
 
-# Initialize metrics for new session
-cat > "$SWARM_DIR/guardian/metrics.json" <<EOF
+GUARDIAN_DIR=".claude/swarm/guardian"
+METRICS_FILE="$GUARDIAN_DIR/metrics.json"
+SESSION_LOG="$GUARDIAN_DIR/session.log"
+
+# Initialize fresh metrics for new session
+cat > "$METRICS_FILE" << EOF
 {
   "session_start": "$(date -Iseconds)",
-  "tool_count": 0,
+  "session_id": "${SESSION_ID:-unknown}",
+  "tool_invocations": 0,
+  "message_count": 0,
   "file_reads": 0,
-  "file_writes": 0,
+  "code_edits": 0,
   "last_checkpoint": null,
-  "alerts": []
+  "alert_level": "good",
+  "alerts_triggered": []
 }
 EOF
 
-# Check for prior session exports
-RECENT_EXPORTS=$(find "$SWARM_DIR/exports" -name "*.txt" -type f -mtime -7 2>/dev/null | sort -r | head -3)
+# Clear previous alerts (start fresh each session)
+echo "# Context Health Alerts" > "$GUARDIAN_DIR/alerts.md"
+echo "" >> "$GUARDIAN_DIR/alerts.md"
+echo "Session started: $(date -Iseconds)" >> "$GUARDIAN_DIR/alerts.md"
+echo "" >> "$GUARDIAN_DIR/alerts.md"
 
-if [ -n "$RECENT_EXPORTS" ]; then
-  echo "=== Prior Session Exports Available ==="
-  echo ""
-  echo "$RECENT_EXPORTS" | while read export_file; do
-    filename=$(basename "$export_file")
-    # Use platform-appropriate stat command
-    if [[ "$OSTYPE" == "darwin"* ]]; then
-      mod_time=$(stat -f "%Sm" -t "%Y-%m-%d %H:%M" "$export_file" 2>/dev/null)
-    else
-      mod_time=$(stat -c "%y" "$export_file" 2>/dev/null | cut -d' ' -f1,2 | cut -d: -f1,2)
+# Log session start
+echo "$(date -Iseconds) - Session initialized: ${SESSION_ID:-unknown}" >> "$SESSION_LOG"
+
+# Check for prior context that could be resumed
+PRIOR_CONTEXT=""
+OUTPUT_MSG="Context tracking initialized."
+
+# Check swarm progress checkpoints
+if [ -d ".claude/swarm/progress" ]; then
+    LATEST_CHECKPOINT=$(ls -t .claude/swarm/progress/*.md 2>/dev/null | head -1)
+    if [ -n "$LATEST_CHECKPOINT" ]; then
+        PRIOR_CONTEXT="$LATEST_CHECKPOINT"
     fi
-    echo "  📄 $filename (modified: $mod_time)"
-  done
-  echo ""
-  echo "To resume from a checkpoint, use: /resume"
-  echo "========================================"
 fi
 
-echo "✓ Swarm workspace initialized"
-echo "✓ Context monitoring active"
+# Check context pointer
+if [ -f ".claude/swarm/context/latest-save.txt" ]; then
+    SAVED_PATH=$(cat .claude/swarm/context/latest-save.txt)
+    if [ -f "$SAVED_PATH" ]; then
+        PRIOR_CONTEXT="$SAVED_PATH"
+    fi
+fi
+
+# Check /tmp saves
+if [ -d "/tmp/claude-contexts" ]; then
+    PROJECT_NAME=$(basename "$CWD")
+    LATEST_TMP=$(ls -t /tmp/claude-contexts/*${PROJECT_NAME}*.md 2>/dev/null | head -1)
+    if [ -n "$LATEST_TMP" ]; then
+        if [ -z "$PRIOR_CONTEXT" ]; then
+            PRIOR_CONTEXT="$LATEST_TMP"
+        fi
+    fi
+fi
+
+# Output status
+if [ -n "$PRIOR_CONTEXT" ]; then
+    echo "$OUTPUT_MSG Prior context available: $PRIOR_CONTEXT"
+else
+    echo "$OUTPUT_MSG No prior context found."
+fi
+
+exit 0
