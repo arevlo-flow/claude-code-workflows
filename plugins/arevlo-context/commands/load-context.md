@@ -1,7 +1,7 @@
 ---
 description: Search and load prior session contexts from multiple sources
 argument-hint: <search query>
-allowed-tools: mcp__notion__notion-search,mcp__notion__notion-fetch,Bash,Read,Glob,Grep,AskUserQuestion
+allowed-tools: mcp__plugin_Notion_notion__notion-search,mcp__plugin_Notion_notion__notion-fetch,Bash,Read,Glob,Grep,AskUserQuestion
 ---
 
 Search for and display prior session contexts from multiple sources.
@@ -16,13 +16,26 @@ Search query: $ARGUMENTS
 
 ### 1. Check available sources
 Run these checks silently to determine which options to show:
-- **Local /tmp:** Check if `/tmp/claude-contexts/` directory exists
+- **Session Transcripts:** Check for `sessions-index.json` in project folder (see detection below)
 - **Swarm Progress:** Check if `.claude/swarm/progress/` directory exists
+- **Claude Plans:** Check if `~/.claude/plans/` or `~/.claude-personal/plans/` directory exists
 - **Notion:** Always available (requires Notion MCP)
 - **GitHub Issues:** Check if in a git repo with remote: `git remote get-url origin`
 - **Docs folder:** Check if `docs/context/` directory exists using Glob
-- **Plans folder:** Check if `plans/` directory exists using Glob
-- **Claude Plans:** Check if `~/.claude/plans/` directory exists
+- **Local /tmp:** Check if `/tmp/claude-contexts/` directory exists
+
+**Detecting Session Transcripts directory:**
+```bash
+# Convert current working directory to Claude's project path format
+PROJECT_PATH=$(pwd | sed 's|/|-|g' | sed 's|^-||')
+# Check both personal and work locations
+TRANSCRIPTS_DIR=""
+if [ -f ~/.claude-personal/projects/${PROJECT_PATH}/sessions-index.json ]; then
+  TRANSCRIPTS_DIR=~/.claude-personal/projects/${PROJECT_PATH}
+elif [ -f ~/.claude/projects/${PROJECT_PATH}/sessions-index.json ]; then
+  TRANSCRIPTS_DIR=~/.claude/projects/${PROJECT_PATH}
+fi
+```
 
 ### 2. Show source picker
 ALWAYS ask the user where to search - present available options:
@@ -30,18 +43,48 @@ ALWAYS ask the user where to search - present available options:
 ```
 Where would you like to search for context?
 
-1. Local /tmp folder                  [only if /tmp/claude-contexts exists]
-2. Swarm checkpoints (.claude/swarm/) [only if .claude/swarm/progress exists]
-3. Notion (_clawd database)
-4. GitHub Issues (in current repo)    [only if git remote exists]
-5. Docs folder (./docs/context/)      [only if docs/context exists]
-6. Plans folder (./plans/)            [only if plans/ exists]
-7. Claude Plans (~/.claude/plans/)    [only if ~/.claude{-personal}/plans exists]
+1. Session Transcripts (prior sessions) [only if sessions-index.json exists]
+2. Swarm checkpoints (.claude/swarm/)   [only if .claude/swarm/progress exists]
+3. Claude Plans (~/.claude/plans/)      [only if plans directory exists]
+4. Notion (_clawd database)
+5. GitHub Issues (in current repo)      [only if git remote exists]
+6. Docs folder (./docs/context/)        [only if docs/context exists]
+7. Local /tmp folder                    [only if /tmp/claude-contexts exists]
 
 Select source:
 ```
 
 ### 3. Search selected source
+
+**If Session Transcripts:**
+- Read `sessions-index.json` from the detected transcripts directory
+- Parse JSON and extract session entries
+- For each session, display:
+  - **Summary** (AI-generated)
+  - **Date** (created/modified)
+  - **Branch** (gitBranch)
+  - **Messages** (messageCount)
+  - **First prompt** (truncated)
+- If query provided, filter by summary or firstPrompt containing the query
+- Sort by modified date (newest first)
+- Display in format:
+  ```
+  Session Transcripts:
+    1. [Jan 24, 08:12] Optimize Claudize with Chrome integration
+       Branch: arevlo.feat-clawd-eyes  |  34 messages
+
+    2. [Jan 23, 22:26] Plugin marketplace setup
+       Branch: main  |  28 messages
+
+    3. [Jan 23, 11:47] Context awareness implementation
+       Branch: arevlo.context-awareness  |  45 messages
+  ```
+- When user selects a session:
+  - Read the corresponding `.jsonl` file
+  - Parse JSONL (each line is a JSON object)
+  - Extract messages with `type: "human"` or `type: "assistant"`
+  - Display conversation in readable format
+  - Note: JSONL files can be large - consider showing last N messages or summarizing
 
 **If Local /tmp:**
 - List files using Glob: `/tmp/claude-contexts/*.md`
@@ -103,14 +146,8 @@ Select source:
 - If no query, show all files
 - Display filenames with dates (extracted from filename)
 
-**If Plans folder:**
-- List files using Glob: `plans/*.md`
-- If query provided, use Grep to search file content for matches
-- If no query, show all files
-- Display filenames (plans are typically named by feature/topic)
-
 **If Claude Plans:**
-- Detect plans directory: `~/.claude/plans/`
+- Detect plans directory (check both): `~/.claude-personal/plans/` or `~/.claude/plans/`
 - List files using Bash: `ls -lt {plans_dir}/*.md | head -20` (sorted by modified date)
 - For each plan file, extract metadata:
   - **Title:** First line starting with `#` (use `head -1`)
@@ -138,11 +175,25 @@ If multiple results found, ask user to select which one to view.
 
 ### 6. Fetch and display full content
 
-**Local files (/tmp or docs):**
+**Session Transcripts:**
+- Read the `.jsonl` file for the selected session
+- Parse each line as JSON
+- Filter for message types: `human`, `assistant`
+- For large transcripts (>100 messages), ask user:
+  - Show last N messages
+  - Show full transcript
+  - Show summary only (from index)
+- Display conversation in readable format:
+  ```
+  [Human] First message...
+  [Assistant] Response...
+  ```
+
+**Local files (/tmp, docs, swarm, plans):**
 - Use Read tool to display the full markdown content
 
 **Notion:**
-- Use `mcp__notion__notion-fetch` to retrieve and display page content
+- Use `mcp__plugin_Notion_notion__notion-fetch` to retrieve and display page content
 
 **GitHub Issues:**
 - Use: `gh issue view {number} --json body`
