@@ -10,14 +10,15 @@ Capture a screenshot with context and create a fragment note in your Obsidian Ze
 
 When you share a screenshot (from Slack, Figma, browser, etc.) along with optional links or context:
 1. Analyzes the screenshot to understand the content
-2. Prompts you for which folder to save in (flow, ai, personal, etc.)
-3. Prompts you for a topic-based title
-4. Creates a fragment note with:
-   - The screenshot embedded (saved to `_attachments/`)
+2. Prompts you for which category folder (flow, ai, personal, etc.)
+3. Creates fragment in `{category}/fragments/` subfolder (creates if doesn't exist)
+4. Prompts you for a topic-based title
+5. Creates a fragment note with:
+   - The screenshot embedded (saved to `{category}/fragments/_attachments/`)
    - Your analysis/description of the content
    - External reference links (Slack, Figma, etc.)
    - Relevant tags
-5. Returns the path to the created note
+6. Returns the path to the created note
 
 ## Configuration
 
@@ -34,11 +35,12 @@ If there's an image in the conversation:
 
 ### 2. Gather Information
 
-**Folder selection:**
-- Check if user provided folder in $ARGUMENTS
-- If not, ask: "Which folder should I save this to?"
+**Category selection:**
+- Check if user provided category in $ARGUMENTS
+- If not, ask: "Which category should I save this to?"
 - Common options: `flow`, `ai`, `personal`, `work`
 - Default to `flow` if user doesn't specify
+- Fragment will be saved in `{category}/fragments/` subfolder
 
 **Topic/Title:**
 - Ask: "What topic should I use for the filename?"
@@ -61,17 +63,18 @@ The screenshot is cached by Claude Code in `~/.claude/image-cache/`:
 # Find the most recent image
 LATEST_IMAGE=$(ls -t ~/.claude/image-cache/*/[0-9]*.png 2>/dev/null | head -1)
 
-# Set vault path
+# Set vault path and fragment folder
 VAULT_PATH="/Users/arevlo/Library/Mobile Documents/com~apple~CloudDocs/zk"
+FRAGMENT_FOLDER="{category}/fragments"
 
 # Create _attachments folder if needed
-mkdir -p "$VAULT_PATH/{folder}/_attachments"
+mkdir -p "$VAULT_PATH/$FRAGMENT_FOLDER/_attachments"
 
 # Copy the image with the topic name
-cp "$LATEST_IMAGE" "$VAULT_PATH/{folder}/_attachments/{topic}.png"
+cp "$LATEST_IMAGE" "$VAULT_PATH/$FRAGMENT_FOLDER/_attachments/{topic}.png"
 
 # Verify the copy
-ls -lh "$VAULT_PATH/{folder}/_attachments/{topic}.png"
+ls -lh "$VAULT_PATH/$FRAGMENT_FOLDER/_attachments/{topic}.png"
 ```
 
 ### 4. Create the Fragment Note
@@ -101,7 +104,7 @@ Use the `mcp__obsidian-zettelkasten__create_fragment_note` tool:
 
 {Any action items or decisions needed}
 `,
-  folder: "{folder}",
+  folder: "{category}/fragments",  // Will be created if doesn't exist
   externalRefs: [
     {
       title: "Slack Thread - {Topic}",
@@ -121,8 +124,8 @@ Show the user:
 
 Example output:
 ```
-✓ Fragment note created: flow/{topic}.md
-✓ Screenshot saved: flow/_attachments/{topic}.png
+✓ Fragment note created: flow/fragments/{topic}.md
+✓ Screenshot saved: flow/fragments/_attachments/{topic}.png
 
 The fragment note is ready in your Obsidian vault. Remember to process it into primitives later!
 ```

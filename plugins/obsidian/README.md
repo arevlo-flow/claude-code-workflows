@@ -4,38 +4,39 @@ Capture screenshots and context directly to your Obsidian Zettelkasten vault as 
 
 ## Commands
 
-### `/obsidian:capture` (or `/obs-capture`)
+### `/obsidian:capture`
 
 Capture a screenshot with context and create a fragment note in your Obsidian vault.
 
 **Usage:**
 ```
-/obsidian:capture [folder]
+/obsidian:capture [category]
 
-# Or with shorthand:
-/obs-capture flow
+# Example:
+/obsidian:capture flow
 ```
 
 **What it does:**
 1. Analyzes any screenshot you've shared in the conversation
-2. Prompts for folder (flow, ai, personal, etc.) if not provided
+2. Prompts for category (flow, ai, personal, etc.) if not provided
 3. Asks for a topic-based title
-4. Copies the screenshot to `{vault}/{folder}/_attachments/{topic}.png`
-5. Creates a fragment note with the screenshot embedded, your analysis, and any external links
-6. Returns the path to the created note
+4. Creates a `{category}/fragments/` subfolder if it doesn't exist
+5. Copies the screenshot to `{category}/fragments/_attachments/{topic}.png`
+6. Creates a fragment note with the screenshot embedded, your analysis, and any external links
+7. Returns the path to the created note
 
 **Example workflow:**
 ```
 User: [Pastes screenshot from Slack]
       https://life-in-flow.slack.com/archives/C123/p456
 
-/obs-capture flow
+/obsidian:capture flow
 
 Claude: What topic should I use for the filename?
 User: property-filters-discussion
 
-Claude: ✓ Fragment note created: flow/property-filters-discussion.md
-        ✓ Screenshot saved: flow/_attachments/property-filters-discussion.png
+Claude: ✓ Fragment note created: flow/fragments/property-filters-discussion.md
+        ✓ Screenshot saved: flow/fragments/_attachments/property-filters-discussion.png
 ```
 
 ## Configuration
