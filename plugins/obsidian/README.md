@@ -4,16 +4,16 @@ Capture screenshots and context directly to your Obsidian Zettelkasten vault as 
 
 ## Commands
 
-### `/obsidian:capture`
+### `/arevlo:obsidian:capture`
 
 Capture a screenshot with context and create a fragment note in your Obsidian vault.
 
 **Usage:**
 ```
-/obsidian:capture [category]
+/arevlo:obsidian:capture [category]
 
 # Example:
-/obsidian:capture flow
+/arevlo:obsidian:capture flow
 ```
 
 **What it does:**
@@ -30,13 +30,66 @@ Capture a screenshot with context and create a fragment note in your Obsidian va
 User: [Pastes screenshot from Slack]
       https://life-in-flow.slack.com/archives/C123/p456
 
-/obsidian:capture flow
+/arevlo:obsidian:capture flow
 
 Claude: What topic should I use for the filename?
 User: property-filters-discussion
 
 Claude: ✓ Fragment note created: flow/fragments/property-filters-discussion.md
         ✓ Screenshot saved: flow/fragments/_attachments/property-filters-discussion.png
+```
+
+### `/arevlo:obsidian:save-link`
+
+Save external links to an Obsidian note's external links table. Creates the note if it doesn't exist.
+
+**Usage:**
+```
+/arevlo:obsidian:save-link <url> [note-path]
+
+# Examples:
+/arevlo:obsidian:save-link https://anthropic.com
+/arevlo:obsidian:save-link https://example.com/article ai/outlinks
+```
+
+**What it does:**
+1. Accepts a URL and optional note path as arguments
+2. Prompts for a descriptive title for the link
+3. Prompts for the note path if not provided (e.g., "ai/outlinks", "resources")
+4. Optionally asks for tags and notes/context
+5. Saves the link to the note's external links table
+6. Creates the note if it doesn't exist
+7. Auto-generates a source tag from the URL domain (e.g., "source/anthropic")
+
+**Example workflow:**
+```
+User: /arevlo:obsidian:save-link https://anthropic.com/research/constitutional-ai
+
+Claude: What title/description should I use for this link?
+User: Constitutional AI Research Paper
+
+Claude: Where should I save this link?
+User: ai/outlinks
+
+Claude: Any tags to add? (optional)
+User: research, alignment
+
+Claude: Any notes or context? (optional)
+User: Foundational paper on RLHF with AI feedback
+
+Claude: ✓ Link saved to ai/outlinks
+        Title: Constitutional AI Research Paper
+        Tags: research, alignment, source/anthropic
+```
+
+**External Links Table Format:**
+The command creates/updates a table in your note with this structure:
+```markdown
+## External Links
+
+| Title | Tags | Link | Notes |
+|-------|------|------|-------|
+| Constitutional AI Research Paper | #research #alignment #source/anthropic | [Constitutional AI Research Paper](https://anthropic.com/research/constitutional-ai) | Foundational paper on RLHF with AI feedback |
 ```
 
 ## Configuration
@@ -70,7 +123,7 @@ This plugin is part of the `claude-code-workflows` marketplace.
 ```json
 {
   "enabledPlugins": {
-    "obsidian@claude-code-workflows": true
+    "arevlo:obsidian@claude-code-workflows": true
   }
 }
 ```
@@ -94,4 +147,5 @@ Use `mcp__obsidian-zettelkasten__process_fragment` to convert fragments to primi
 
 ## Version History
 
+- **1.2.0** - Added `/arevlo:obsidian:save-link` command for saving external links to notes
 - **1.0.0** - Initial release with screenshot capture to fragment notes

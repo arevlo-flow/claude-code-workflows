@@ -18,11 +18,11 @@ A curated collection of Claude Code plugins providing slash commands for design-
 /plugin marketplace add arevlo/claude-code-workflows
 
 # Install specific plugins
-/plugin install arevlo-context@claude-code-workflows
-/plugin install arevlo-design@claude-code-workflows
-/plugin install arevlo-dev@claude-code-workflows
-/plugin install obsidian@claude-code-workflows
-/plugin install arevlo-swarm@claude-code-workflows
+/plugin install arevlo:context@claude-code-workflows
+/plugin install arevlo:design@claude-code-workflows
+/plugin install arevlo:dev@claude-code-workflows
+/plugin install arevlo:obsidian@claude-code-workflows
+/plugin install arevlo:swarm@claude-code-workflows
 ```
 
 ### Updating
@@ -38,7 +38,7 @@ A curated collection of Claude Code plugins providing slash commands for design-
 
 ## Plugins
 
-### arevlo-context
+### arevlo:context
 
 **Session context and plan management with multi-source storage.**
 
@@ -102,7 +102,7 @@ Session Transcripts are automatically saved by Claude Code for every session. Us
 
 ---
 
-### arevlo-design
+### arevlo:design
 
 **Figma Make design-to-code workflow integration.**
 
@@ -147,7 +147,7 @@ When creating prompts for Figma Make:
 
 ---
 
-### arevlo-dev
+### arevlo:dev
 
 **Git workflows, PR management, and development automation.**
 
@@ -230,20 +230,22 @@ type: brief description (50 chars max)
 
 ---
 
-### obsidian
+### arevlo:obsidian
 
 **Capture screenshots and context to Obsidian Zettelkasten vault as fragment notes.**
 
-Quickly save screenshots with analysis and context to your Obsidian vault, supporting the Zettelkasten method of knowledge management.
+Quickly save screenshots with analysis and context to your Obsidian vault, supporting the Zettelkasten method of knowledge management. Also save external links to note tables.
 
 #### Commands
 
 | Command | Description |
 |---------|-------------|
 | `/obsidian:capture [folder]` | Capture screenshot with context and create fragment note |
+| `/obsidian:save-link <url> [note-path]` | Save external link to note's external links table |
 
 #### Workflow
 
+**Capture Screenshot:**
 ```bash
 # Share a screenshot in chat (Slack, Figma, browser, etc.)
 [Paste screenshot]
@@ -259,6 +261,23 @@ https://life-in-flow.slack.com/archives/...
 # 4. Creates fragment note with embedded image and analysis
 # 5. Includes external links (Slack, Figma, etc.)
 # 6. Returns note path
+```
+
+**Save External Links:**
+```bash
+# Save a link with prompts
+/obsidian:save-link https://anthropic.com/research/constitutional-ai
+
+# Or specify the note path directly
+/obsidian:save-link https://example.com/article ai/outlinks
+
+# What it does:
+# 1. Prompts for link title/description
+# 2. Prompts for note path (if not provided)
+# 3. Optionally asks for tags and notes
+# 4. Saves to external links table in the note
+# 5. Creates note if it doesn't exist
+# 6. Auto-adds source tag from domain (e.g., "source/anthropic")
 ```
 
 #### Fragment Lifecycle
@@ -285,7 +304,7 @@ Use `mcp__obsidian-zettelkasten__process_fragment` to convert fragments to primi
 
 ---
 
-### arevlo-swarm
+### arevlo:swarm
 
 **Multi-agent orchestration with autonomous workflows and ACE context management.**
 
@@ -601,7 +620,7 @@ gh auth login
 
 ### Platform-Specific Notes
 
-#### arevlo-swarm Requirements
+#### arevlo:swarm Requirements
 
 - **macOS/Linux:** bash or zsh (default)
 - **Windows:** PowerShell (default on Windows 10+), Git Bash, or WSL
@@ -614,11 +633,11 @@ gh auth login
 
 Update database names and data source IDs in command files:
 
-**arevlo-context:**
+**arevlo:context:**
 - Default database: `_clawd`
 - Update in: `commands/save-context.md`
 
-**arevlo-design:**
+**arevlo:design:**
 - Default database: `_make`
 - Update in: `commands/make.md`
 
@@ -655,10 +674,11 @@ Plugins follow semantic versioning. Check the marketplace for updates:
 ```
 
 Current versions:
-- **arevlo-context:** 1.8.1
-- **arevlo-design:** 1.8.1
-- **arevlo-dev:** 1.8.1
-- **arevlo-swarm:** 1.8.1
+- **arevlo:context:** 1.8.1
+- **arevlo:design:** 1.8.1
+- **arevlo:dev:** 1.8.1
+- **arevlo:obsidian:** 1.2.0
+- **arevlo:swarm:** 1.8.1
 
 ## Contributing
 
