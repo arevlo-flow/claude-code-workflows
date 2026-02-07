@@ -175,7 +175,13 @@ Use the `Write` tool to save the markdown content to the resolved file path.
 
 ### 7. Confirm to User
 
-Show a summary:
+**If no unread emails were found** (skipped from Step 2), just inform the user:
+
+```
+No unread emails found. Nothing to digest!
+```
+
+**If emails were processed**, show a summary:
 
 ```
 Gmail Digest Complete
